@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="src/style.css" type="text/css">
+</head>
+<body>
+    <header>
+        <ul id="menu">
+            <li class="check">물건입력</li>
+            <li onclick="alert(`준비중입니다.`)">물건조회</li>
+        </ul>        
+    </header>
+    <article>
+        <h1 id="titleName">물건입력</h1>
+        <div id="mainArticle">
+            <form action="/save" method="POST" id="inputForm">
+                <div id="inputArea">
+                    <div id="textUpload">
+                        <div class="label">이름</div>
+                        <input type="text" class="inputDetail" name="name" placeholder="이름(필수)" required>
+                        <div class="label">위치</div>
+                        <input type="text" class="inputDetail" name="position" placeholder="위치(GPS 태그 또는 글)">
+                        <div class="label">재고/수량</div>
+                        <input type="number" class="inputDetail" name="count" placeholder="재고/수량">
+                        <div class="label">대여여부</div>
+                        <input type="text" class="inputDetail" name="rental" placeholder="대여여부">
+                        <div class="label">설명</div>
+                        <textarea type="text" class="inputDetail" name="description" placeholder="물건에 대한 구체적인 설명을 입력해주세요"></textarea>
+                    </div>
+                    <div id="imageUpload">
+                        <input id="imageBuffer" type="hidden" name="image">
+                        <div id="imageSubmit">
+                            <input type="button" value="파일 선택" onclick="imageSelect()">
+                            <div id="imageFileName">선택된 파일 없음</div>
+                        </div>
+                        <div id="imageArea">
+                            <img id="previewImage" src="#" alt="이미지 없음" width="auto">
+                        </div>
+                    </div>
+                </div>
+                <div id="submitArea">
+                    <input class="btn" type="submit">
+                    <input class="btn" type="reset">
+                </div>
+            </form>
+        </div>
+    </article>
+    <script src="src/settemplate.js"></script>
+    <script defer src="src/setform.js"></script>
+</body>
+</html>
