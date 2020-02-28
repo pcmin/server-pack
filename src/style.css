@@ -12,14 +12,16 @@ body{
     background-color: hsl(263, 48%, 95%);
     border-radius: 0.5pc 0.5pc 0pc 0pc;
 }
-#menu>li.check{background-color: white}
-#menu>li:hover{background-color: hsl(0, 0%, 97%)}
+#menu>li.menucheck{background-color: white}
+#menu>li:not(.menucheck):hover{background-color: hsl(0, 0%, 97%)}
 
 article{
     height: 100%;
     background-color: white;
     padding: 1pc;
 }
+article:not(.activeArticle){display: none;}
+
 #inputArea{display: flex;}
 #textUpload{flex: 1 0 auto;}
 .label{

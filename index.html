@@ -9,13 +9,13 @@
 <body>
     <header>
         <ul id="menu">
-            <li class="check">물건입력</li>
-            <li onclick="alert(`준비중입니다.`)">물건조회</li>
+            <li data-tar="inputArticle" class="menucheck">물건입력</li>
+            <li data-tar="searchArticle">물건조회</li>
         </ul>        
     </header>
-    <article>
-        <h1 id="titleName">물건입력</h1>
-        <div id="mainArticle">
+    <article id="inputArticle" class="activeArticle">
+        <h1 class="titleName">물건입력</h1>
+        <div id="inputMainArticle">
             <form action="/save" method="POST" id="inputForm">
                 <div id="inputArea">
                     <div id="textUpload">
@@ -48,6 +48,12 @@
             </form>
         </div>
     </article>
+
+    <article id="searchArticle">
+        <h1 class="titleName">물건조회</h1>
+        <div id="searchMainArticle"></div>
+    </article>
+    
     <script src="src/settemplate.js"></script>
     <script defer src="src/setform.js"></script>
 </body>

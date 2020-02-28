@@ -31,10 +31,11 @@ function uploadProcess(files){
 // 메뉴 클릭
 var menuList = document.querySelectorAll("#menu>li");
 for(let i=0; i<menuList.length; i++){
-    if(i==1) continue;
     menuList[i].addEventListener("click", (ev)=>{
-        document.getElementById("titleName").innerHTML = ev.target.innerHTML
-        document.getElementById("mainArticle").innerHTML = template[i];
+        document.getElementsByClassName("activeArticle")[0].classList.remove("activeArticle");
+        document.getElementsByClassName("menucheck")[0].classList.remove("menucheck");
+        document.getElementById(ev.target.dataset.tar).classList.add("activeArticle");
+        ev.target.classList.add("menucheck");
     });
 }
 
