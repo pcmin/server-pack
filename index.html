@@ -6,14 +6,14 @@
     <title>Document</title>
     <link rel="stylesheet" href="src/style.css" type="text/css">
 </head>
-<body>
+<body class="stretchContainer">
     <header>
         <ul id="menu">
             <li data-tar="inputArticle" class="menucheck">물건입력</li>
             <li data-tar="searchArticle">물건조회</li>
-        </ul>        
+        </ul>
     </header>
-    <article id="inputArticle" class="activeArticle">
+    <article id="inputArticle" class="stretchContainer activeArticle">
         <h1 class="titleName">물건입력</h1>
         <div id="inputMainArticle">
             <form action="/save" method="POST" id="inputForm">
@@ -30,8 +30,7 @@
                         <div class="label">설명</div>
                         <textarea type="text" class="inputDetail" name="description" placeholder="물건에 대한 구체적인 설명을 입력해주세요"></textarea>
                     </div>
-                    <div id="imageUpload">
-                        <input id="imageBuffer" type="hidden" name="image">
+                    <div id="imageUpload" class="stretchContainer">
                         <div id="imageSubmit">
                             <input type="button" value="파일 선택" onclick="imageSelect()">
                             <div id="imageFileName">선택된 파일 없음</div>
@@ -39,6 +38,7 @@
                         <div id="imageArea">
                             <img id="previewImage" src="#" alt="이미지 없음" width="auto">
                         </div>
+                        <input id="imageBuffer" type="hidden" name="image">
                     </div>
                 </div>
                 <div id="submitArea">
@@ -49,11 +49,14 @@
         </div>
     </article>
 
-    <article id="searchArticle">
+    <article id="searchArticle" class="stretchContainer">
         <h1 class="titleName">물건조회</h1>
-        <div id="searchMainArticle"></div>
+        <div id="searchMainArticle" class="stretchContainer">
+            <input type="search" id="searchForm" class="inputDetail" placeholder="검색">
+            <div id="listContainer"></div>
+        </div>
     </article>
-    
+
     <script src="src/settemplate.js"></script>
     <script defer src="src/setform.js"></script>
 </body>
