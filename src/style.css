@@ -2,7 +2,7 @@
 body{
     height: 100%;
     min-height: 100vh;
-    background-color: hsl(263, 48%, 90%);
+    background-color: hsl(263, 48%, 87%);
     margin: 0pc;
     padding: 1pc;
     overflow: auto;
@@ -15,7 +15,7 @@ body{
 #menu>li{
     display: inline;
     padding: 0.5pc 1pc;
-    background-color: hsl(263, 48%, 95%);
+    background-color: hsl(263, 48%, 93%);
     border-radius: 0.5pc 0.5pc 0pc 0pc;
 }
 #menu>li.menucheck{background-color: white}
@@ -57,7 +57,7 @@ textarea.inputDetail{
 #imageFileName{
     display: inline-block;
     padding-left: 0.25pc;
-    font-size: 13px;
+    font-size: 0.8em;
 }
 #imageArea{
     display: flex;
@@ -77,9 +77,53 @@ textarea.inputDetail{
 #submitArea>input[type=submit]:hover{background-color: hsl(263, 48%, 80%) !important;}
 
 #listContainer{
-    border: 2px solid hsl(0, 0%, 87%);
+    background-color: hsl(0, 0%, 97%);
     margin-top: 1pc;
+    position: relative;
 }
+#listContainer>#tokenlist{
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    overflow: auto;
+}
+
+#tokenlist>.token{
+    display: flex;
+    background-color: white;
+    align-items: center;
+    padding: 0.5pc;
+    border: 2px solid hsl(0, 0%, 87%);
+}
+#tokenlist>.token:not(:first-child){border-top:none !important;}
+.token>*{flex:auto;}
+.token>*:not(:last-child){margin-right: 0.5pc;}
+.token>img{
+    flex: 0 0 3.5em;
+    height: 3.5em;
+    /* border: 2px solid hsl(0, 0%, 87%); */
+}
+.token>.textgroup>div:first-child{display: flex;align-items: center;}
+.token .text{
+    padding: 0.25pc;
+    word-break: keep-all;
+}
+.token .text.name{
+    font-size: 1.1em;
+    font-weight: 700;
+    /* flex-grow: 1; /* .rent, .count 를 우측정렬할 경우 */
+}
+.token .text.name+div{margin-left: 0.7pc;}
+.token .text.rent,.token .text.count{font-size: 0.8em;}
+.token>.btn{
+    flex: 0 0 2pc;
+    border: none;
+    background-color: white;
+    align-self: stretch;
+}
+.token>.btn:hover{background-color: hsl(0, 0%, 95%);}
 
 .stretchContainer{
     display: flex;
