@@ -47,7 +47,7 @@ textarea.inputDetail{
 }
 
 .imageUpload{
-    flex: 0 0 250px;
+    flex: 0 0 300px;
     border: 2px solid hsl(0, 0%, 87%);
 }
 article .imageUpload{margin-left: 1pc;}
@@ -136,7 +136,7 @@ article .submitArea{margin-top: 1pc;}
 }
 #overlay .inputArea{flex-direction: column;}
 #overlay .imageUpload{
-    flex: 0 0 250px;
+    flex: 0 0 206px;
     margin-top: 1pc;
 }
 

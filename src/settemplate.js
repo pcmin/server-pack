@@ -30,7 +30,7 @@ function uploadProcess(files, sign){
 }
 
 // 토큰 양식 반환함수
-function template(img, name, rent, cnt, pos){return `<img src="${img}" class="thumbnail" width="100%"><div class="textgroup"><div><div class="text name" title="${name}">${name}</div><div class="text rent" title="${rent}">${rent}</div><div class="text count" title="${cnt}">${cnt}</div></div><div class="text pos" title="${pos}">${pos}</div></div><button class="btn delete" title="삭제하기"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg></button>`;}
+function template(img, name, rent, cnt, pos){return `<img src="${img}" class="thumbnail" width="100%"><div class="textgroup"><div><div class="text name" title="${name}">${name}</div><div class="text rent" title="${rent}">${rent}</div><div class="text count" title="${cnt}">${cnt}</div></div><div class="text pos" title="${pos}">${pos}</div></div><button class="btn delete" title="삭제하기" onclick="delelteToken(event)"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg></button>`;}
 
 // 토큰 추가
 function addToken(data){
@@ -41,18 +41,7 @@ function addToken(data){
 }
 // 토큰 삭제
 function delelteToken(ev){
-    ev.target.parentElement.removeChild(ev.target);
-}
-
-// 메뉴 클릭
-var menuList = document.querySelectorAll("#menu>li");
-for(let i=0; i<menuList.length; i++){
-    menuList[i].addEventListener("click", (ev)=>{
-        document.getElementsByClassName("activeArticle")[0].classList.remove("activeArticle");
-        document.getElementsByClassName("menucheck")[0].classList.remove("menucheck");
-        document.getElementById(ev.target.dataset.tar).classList.add("activeArticle");
-        ev.target.classList.add("menucheck");
-    });
+    ev.target.parentElement.parentElement.removeChild(ev.target.parentElement);
 }
 
 // 오버레이 창 열기
@@ -64,6 +53,17 @@ function overlayOn(){
 function overlayOff(){
     document.getElementById("overlay").style.display = "none";
     document.body.style.overflow = "visible";
+}
+
+// 메뉴 클릭
+var menuList = document.querySelectorAll("#menu>li");
+for(let i=0; i<menuList.length; i++){
+    menuList[i].addEventListener("click", (ev)=>{
+        document.getElementsByClassName("activeArticle")[0].classList.remove("activeArticle");
+        document.getElementsByClassName("menucheck")[0].classList.remove("menucheck");
+        document.getElementById(ev.target.dataset.tar).classList.add("activeArticle");
+        ev.target.classList.add("menucheck");
+    });
 }
 
 // 오버레이 외곽클릭시 창 닫기
