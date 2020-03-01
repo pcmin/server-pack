@@ -1,1 +1,0 @@
-if(document.cookie==="saveSuccess=1"){alert("성공적으로 저장하였습니다.");document.cookie="saveSuccess=0";}

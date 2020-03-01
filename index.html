@@ -33,17 +33,16 @@
                     <div class="imageUpload stretchContainer">
                         <div class="imageSubmit">
                             <input type="button" value="파일 선택" onclick="imageSelect(0)">
-                            <div id="imageFileName0">선택된 파일 없음</div>
+                            <div id="imageFileName0" class="imageFileName">선택된 파일 없음</div>
                         </div>
                         <div class="centerContainer">
-                            <img id="previewImage0" src="#" alt="이미지 없음" width="auto">
+                            <img id="previewImage0" src="" class="previewImage" alt="이미지 없음" width="auto">
                         </div>
-                        <input id="imageBuffer0" type="hidden" name="image">
                     </div>
                 </div>
                 <div class="submitArea">
-                    <input class="btn submit" type="submit">
-                    <input class="btn" type="reset">
+                    <input type="button" class="btn submit" value="제출" onclick="submitForm(0)">
+                    <input type="button" class="btn" value="초기화" onclick="resetForm(0)">
                 </div>
             </form>
         </div>
@@ -61,19 +60,18 @@
         <div class="stat">
             <form action="/update" method="POST">
                 <div class="submitArea">
-                    <input class="btn submit" type="submit">
-                    <input class="btn" type="reset">
+                    <input type="button" class="btn submit" value="변경" onclick="submitForm(1)">
+                    <input type="button" class="btn" value="초기화" onclick="resetForm(1)">
                 </div>
                 <div class="inputArea equalContainer">
                     <div class="imageUpload stretchContainer">
                         <div class="imageSubmit">
                             <input type="button" value="파일 선택" onclick="imageSelect(1)">
-                            <div id="imageFileName1">선택된 파일 없음</div>
+                            <div id="imageFileName1" class="imageFileName">선택된 파일 없음</div>
                         </div>
                         <div class="centerContainer">
-                            <img id="previewImage1" src="#" alt="이미지 없음" height="auto">
+                            <img id="previewImage1" src="" class="previewImage" alt="이미지 없음" height="auto">
                         </div>
-                        <input id="imageBuffer1" type="hidden" name="image">
                     </div>
                     <div class="label">이름</div>
                     <input type="text" class="inputDetail" name="name" placeholder="이름(필수)" required>
@@ -90,7 +88,6 @@
         </div>
     </div>
 
-    <script src="src/settemplate.js"></script>
-    <script defer src="src/setform.js"></script>
+    <script defer src="src/settemplate.js"></script>
 </body>
 </html>

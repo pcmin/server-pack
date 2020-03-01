@@ -27,10 +27,26 @@ app.post("/save", (req, res)=>{
     req.on("data", (data) => {body += data})
     req.on("end", () => {
         const data = qs.parse(body)
-        fs.writeFile(`./data/${data.name}`, qs.stringify(data), "utf-8", (err)=>{
-            if(err) errorExec(err);
-            res.cookie("saveSuccess", "1")
+        console.log("저장감지", data.n)
+        fs.writeFile(`./data/${data.n}`, qs.stringify(data), "utf-8", (err)=>{
+            if(err) errorExec(err)
+            console.log("저장성공", data.n)
             res.redirect("/")
+        })
+    })
+})
+
+// 중복이름 조회
+app.post("/check", (req, res)=>{
+    let body = ""
+    req.on("data", (data) => {body += data})
+    req.on("end", () => {
+        const name = qs.unescape(body)
+        fs.readdir("./data", (err, files)=>{
+            if(err) errorExec(err)
+            const result = files.indexOf(name)===-1?'0':'1'
+            console.log("중복조사", name, result)
+            res.status(200).send(result)
         })
     })
 })
