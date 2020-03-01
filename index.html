@@ -42,16 +42,21 @@
                 </div>
                 <div class="submitArea">
                     <input type="button" class="btn submit" value="제출" onclick="submitForm(0)">
-                    <input type="button" class="btn" value="초기화" onclick="resetForm(0)">
+                    <input type="button" class="btn reset" value="초기화" onclick="resetForm(0)">
                 </div>
             </form>
         </div>
     </article>
 
     <article id="searchArticle" class="stretchContainer">
-        <h1 class="titleName">물건조회</h1>
+        <h1 class="titleName" onclick="overlayOn()">물건조회</h1>
         <div id="searchMainArticle" class="stretchContainer">
-            <input type="search" id="searchForm" class="inputDetail" placeholder="검색">
+            <div class="equalContainer">
+                <button id="searchBtn" class="btn search" onclick="search()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="1pc" height="1pc" viewBox="0 0 612.08 612.08"><path d="M237.927,0C106.555,0,0.035,106.52,0.035,237.893c0,131.373,106.52,237.893,237.893,237.893c50.518,0,97.368-15.757,135.879-42.597l0.028-0.028l176.432,176.433c3.274,3.274,8.48,3.358,11.839,0l47.551-47.551c3.274-3.274,3.106-8.703-0.028-11.838L433.223,373.8c26.84-38.539,42.597-85.39,42.597-135.907C475.82,106.52,369.3,0,237.927,0z M237.927,419.811c-100.475,0-181.918-81.443-181.918-181.918S137.453,55.975,237.927,55.975s181.918,81.443,181.918,181.918S338.402,419.811,237.927,419.811z"/></svg>
+                </button>
+                <input type="search" id="searchForm" class="inputDetail" placeholder="검색">
+            </div>
             <div id="listContainer"><div id="tokenlist"></div></div>
         </div>
     </article>
@@ -61,7 +66,8 @@
             <form action="/update" method="POST">
                 <div class="submitArea">
                     <input type="button" class="btn submit" value="변경" onclick="submitForm(1)">
-                    <input type="button" class="btn" value="초기화" onclick="resetForm(1)">
+                    <input type="button" class="btn reset" value="초기화" onclick="resetForm(1)">
+                    <input type="button" class="btn cancel" value="취소" onclick="overlayOff()">
                 </div>
                 <div class="inputArea equalContainer">
                     <div class="imageUpload stretchContainer">

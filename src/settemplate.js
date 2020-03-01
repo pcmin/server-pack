@@ -101,7 +101,7 @@ function ajaxPipe(
 function resetForm(sign, force=false){
     if(!force && !confirm("입력한 내용을 지웁니까?")) return 0;
     const targetForm = document.forms[sign];
-    for(let i=0; i<5; i++) targetForm[i].value = "";
+    for(let i=0; i<5; i++) targetForm.getElementsByClassName("inputDetail")[i].value = "";
     targetForm.getElementsByClassName("previewImage")[0].src = "";
     targetForm.getElementsByClassName("previewImage")[0].style.width = "auto";
     targetForm.getElementsByClassName("imageFileName")[0].innerHTML = "선택된 파일 없음";
@@ -139,4 +139,8 @@ function submitForm(sign){
         }, ()=>{alert("성공적으로 저장하였습니다.");resetForm(sign, true);},
         ()=>{alert("저장에 실패하였습니다. 다시시도 해주세요.")})
     })
+}
+
+function search(){
+    console.log(document.getElementById("searchForm").value)
 }

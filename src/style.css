@@ -68,9 +68,23 @@ article .submitArea{margin-top: 1pc;}
 .submitArea>.btn:hover{background-color: hsl(0, 0%, 87%);}
 .submitArea>.btn.submit{background-color: hsl(263, 48%, 87%) !important;}
 .submitArea>.btn.submit:hover{background-color: hsl(263, 48%, 80%) !important;}
+.submitArea>.btn.cancel{float: right !important;}
+
+#searchArticle .btn{
+    flex: 0 0 auto;
+    border: 1px inset rgba(0, 0, 0, 0.18);
+    width: 2.3pc;
+    height: 2.3pc;
+    background-color: white;
+}
+#searchArticle .btn:hover{background-color: hsl(0, 0%, 87%);}
+#searchForm{
+    border: 1px inset rgba(0, 0, 0, 0.18);
+    border-left: none;
+}
 
 #listContainer{
-    background-color: hsl(0, 0%, 97%);
+    background-color: hsl(0, 0%, 93%);
     margin-top: 1pc;
     position: relative;
 }
@@ -136,7 +150,7 @@ article .submitArea{margin-top: 1pc;}
 }
 #overlay .inputArea{flex-direction: column;}
 #overlay .imageUpload{
-    flex: 0 0 206px;
+    flex: 0 0 206px !important;
     margin-top: 1pc;
 }
 
@@ -155,6 +169,8 @@ article .submitArea{margin-top: 1pc;}
     justify-content: center;
     align-items: center;
 }
+
+input[type=button],button{cursor: pointer;}
 
 @media only screen and (max-width: 600px) {
     .inputArea{flex-direction: column;}
