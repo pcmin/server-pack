@@ -16,9 +16,9 @@
     <article id="inputArticle" class="stretchContainer activeArticle">
         <h1 class="titleName">물건입력</h1>
         <div id="inputMainArticle">
-            <form action="/save" method="POST" id="inputForm">
-                <div id="inputArea">
-                    <div id="textUpload">
+            <form action="/save" method="POST">
+                <div class="inputArea equalContainer">
+                    <div class="textUpload">
                         <div class="label">이름</div>
                         <input type="text" class="inputDetail" name="name" placeholder="이름(필수)" required>
                         <div class="label">위치</div>
@@ -30,19 +30,19 @@
                         <div class="label">설명</div>
                         <textarea type="text" class="inputDetail" name="description" placeholder="물건에 대한 구체적인 설명을 입력해주세요"></textarea>
                     </div>
-                    <div id="imageUpload" class="stretchContainer">
-                        <div id="imageSubmit">
-                            <input type="button" value="파일 선택" onclick="imageSelect()">
-                            <div id="imageFileName">선택된 파일 없음</div>
+                    <div class="imageUpload stretchContainer">
+                        <div class="imageSubmit">
+                            <input type="button" value="파일 선택" onclick="imageSelect(0)">
+                            <div id="imageFileName0">선택된 파일 없음</div>
                         </div>
-                        <div id="imageArea">
-                            <img id="previewImage" src="#" alt="이미지 없음" width="auto">
+                        <div class="centerContainer">
+                            <img id="previewImage0" src="#" alt="이미지 없음" width="auto">
                         </div>
-                        <input id="imageBuffer" type="hidden" name="image">
+                        <input id="imageBuffer0" type="hidden" name="image">
                     </div>
                 </div>
-                <div id="submitArea">
-                    <input class="btn" type="submit">
+                <div class="submitArea">
+                    <input class="btn submit" type="submit">
                     <input class="btn" type="reset">
                 </div>
             </form>
@@ -56,6 +56,39 @@
             <div id="listContainer"><div id="tokenlist"></div></div>
         </div>
     </article>
+
+    <div id="overlay">
+        <div class="stat">
+            <form action="/update" method="POST">
+                <div class="submitArea">
+                    <input class="btn submit" type="submit">
+                    <input class="btn" type="reset">
+                </div>
+                <div class="inputArea equalContainer">
+                    <div class="imageUpload stretchContainer">
+                        <div class="imageSubmit">
+                            <input type="button" value="파일 선택" onclick="imageSelect(1)">
+                            <div id="imageFileName1">선택된 파일 없음</div>
+                        </div>
+                        <div class="centerContainer">
+                            <img id="previewImage1" src="#" alt="이미지 없음" height="auto">
+                        </div>
+                        <input id="imageBuffer1" type="hidden" name="image">
+                    </div>
+                    <div class="label">이름</div>
+                    <input type="text" class="inputDetail" name="name" placeholder="이름(필수)" required>
+                    <div class="label">위치</div>
+                    <input type="text" class="inputDetail" name="position" placeholder="위치(GPS 태그 또는 글)">
+                    <div class="label">재고/수량</div>
+                    <input type="number" class="inputDetail" name="count" placeholder="재고/수량">
+                    <div class="label">대여여부</div>
+                    <input type="text" class="inputDetail" name="rental" placeholder="대여여부">
+                    <div class="label">설명</div>
+                    <textarea type="text" class="inputDetail" name="description" placeholder="물건에 대한 구체적인 설명을 입력해주세요"></textarea>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <script src="src/settemplate.js"></script>
     <script defer src="src/setform.js"></script>

@@ -1,13 +1,13 @@
 // 이미지 입력
-function imageSelect(){
+function imageSelect(sign){
     let uploadBtn = document.createElement("input");
     uploadBtn.type = "file";
     uploadBtn.onchange = function(){
-        uploadProcess(this.files);
+        uploadProcess(this.files, sign);
     }
     uploadBtn.click();
 }
-function uploadProcess(files){
+function uploadProcess(files, sign){
     if(!files[0]) return 0;
     console.log(files[0])
     const fileName = `${files[0].name}(${(files[0].size/1024).toFixed(2)}kB)`;
@@ -16,10 +16,11 @@ function uploadProcess(files){
     reader.onload = function(ev){
         try{
             const imgUrl = ev.target.result
-            document.getElementById("imageFileName").innerHTML = fileName;
-            document.getElementById("previewImage").src = imgUrl;
-            document.getElementById("imageBuffer").value = imgUrl;
-            document.getElementById("previewImage").style.width = "100%";
+            document.getElementById("imageFileName"+sign).innerHTML = fileName;
+            document.getElementById("previewImage"+sign).src = imgUrl;
+            document.getElementById("imageBuffer"+sign).value = imgUrl;
+            if(sign===0)document.getElementById("previewImage"+sign).style.width = "100%";
+            else if(sign===1)document.getElementById("previewImage"+sign).style.height = "206px";
         }
         catch (err){
             console.log("ERR: ", err);
@@ -53,3 +54,4 @@ for(let i=0; i<menuList.length; i++){
         ev.target.classList.add("menucheck");
     });
 }
+// menuList[1].click();
