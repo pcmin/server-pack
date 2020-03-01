@@ -54,4 +54,17 @@ for(let i=0; i<menuList.length; i++){
         ev.target.classList.add("menucheck");
     });
 }
-// menuList[1].click();
+
+// 오버레이 창 열기
+function overlayOn(){
+    document.getElementById("overlay").style.display = "flex";
+    document.body.style.overflow = "hidden";
+}
+// 오버레이 창 닫기
+function overlayOff(){
+    document.getElementById("overlay").style.display = "none";
+    document.body.style.overflow = "visible";
+}
+
+// 오버레이 외곽클릭시 창 닫기
+document.getElementById("overlay").onclick = function(ev){if(ev.target === ev.currentTarget) overlayOff()}

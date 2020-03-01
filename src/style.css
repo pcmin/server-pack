@@ -123,19 +123,15 @@ article .submitArea{margin-top: 1pc;}
     bottom: 0;
     left: 0;
     right: 0;
-    display: flex;
-    width: 100%;
-    height: 100%;
+    display: none;
     background-color: hsla(0, 0%, 0%, 0.5);
-    align-items: center;
-    justify-content: center;
     overflow: auto;
 }
 #overlay>.stat{
     background-color: white;
     padding: 1pc;
     height: fit-content;
-    width: 50%;
+    width: 55%;
     margin: auto;
 }
 #overlay .inputArea{flex-direction: column;}
@@ -163,10 +159,11 @@ article .submitArea{margin-top: 1pc;}
 @media only screen and (max-width: 600px) {
     .inputArea{flex-direction: column;}
     .imageUpload{
-        margin: 0pc;
+        margin: 0pc !important;
         margin-top: 1pc !important;
     }
-    #overlay>.stat{
-        width:100%;
-    }
+    #overlay>.stat{width:100%;}
+}
+@media only screen and (min-width: 1080px) {
+    .imageUpload{flex: 0 0 550px !important;}
 }
