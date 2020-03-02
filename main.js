@@ -2,8 +2,6 @@ const fs = require("fs");
 const qs = require("querystring");
 const express = require("express");
 const app = express();
-//var cookieParser = require('cookie-parser') //쿠키사용시 필요
-//app.use(cookieParser())
 
 const port = 3000;
 // 오류 상황 처리
