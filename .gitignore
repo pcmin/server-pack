@@ -2,3 +2,4 @@ data/*
 image/*
 node_modules
 doc.test
+*test*.*

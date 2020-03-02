@@ -70,7 +70,7 @@ article .submitArea{margin-top: 1pc;}
 .submitArea>.btn.submit:hover{background-color: hsl(263, 48%, 80%) !important;}
 .submitArea>.btn.cancel{float: right !important;}
 
-#searchArticle .btn{
+#searchBtn{
     flex: 0 0 auto;
     border: 1px inset rgba(0, 0, 0, 0.18);
     width: 2.3pc;

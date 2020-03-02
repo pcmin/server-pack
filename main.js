@@ -51,6 +51,34 @@ app.post("/check", (req, res)=>{
     })
 })
 
+// 내용 요청
+app.post("/search", (req, res)=>{
+    let body = ""
+    req.on("data", (data) => {body += data})
+    req.on("end", () => {
+        const query = qs.unescape(body)
+        fs.readdir("./data", (err, files)=>{
+            if(err) errorExec(err)
+            let result = [];
+            // 전체검색인 경우
+            if(query === ""){
+                for(i in files){
+                    result.push(fs.readFileSync("./data/"+files[i], "utf-8"));
+                }
+            }
+            // 이름값 포함하는 경우
+            else{
+                for(i in files){
+                    if(files[i].indexOf(query)===-1) continue;
+                    result.push(fs.readFileSync("./data/"+files[i], "utf-8"));
+                }
+            }
+            console.log("내용검색", query, result.length)
+            res.status(200).send(String(result))
+        })
+    })
+})
+
 // 스크립트 자원소스
 app.use('/src', express.static(__dirname + "/src"));
 // 페이지 오류
