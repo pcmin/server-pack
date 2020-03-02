@@ -107,19 +107,7 @@ function resetForm(sign, force=false){
         targetForm.getElementsByClassName("previewImage")[0].style.width = "auto";
         targetForm.getElementsByClassName("imageFileName")[0].innerHTML = "선택된 파일 없음";
     }
-    else if(sign===1){
-        const subject = document.querySelectorAll("#tokenlist>.token")[targetForm.dataset.tokenid];
-        console.log(subject)
-        targetForm.getElementsByClassName("inputDetail")[0].value = subject.getElementsByClassName("name")[0].innerHTML;
-        targetForm.getElementsByClassName("inputDetail")[1].value = subject.getElementsByClassName("pos")[0].innerHTML;
-        targetForm.getElementsByClassName("inputDetail")[2].value = subject.getElementsByClassName("count")[0].innerHTML;
-        targetForm.getElementsByClassName("inputDetail")[3].value = subject.getElementsByClassName("rent")[0].innerHTML;
-        targetForm.getElementsByClassName("inputDetail")[4].value = subject.getElementsByClassName("des")[0].innerHTML;
-        // src가 존재할 경우 이미지 진행
-        targetForm.getElementsByClassName("previewImage")[0].src = subject.firstElementChild.src;
-        targetForm.getElementsByClassName("previewImage")[0].style.height = "206px";
-        // targetForm.getElementsByClassName("imageFileName")[0].innerHTML = "";
-    }
+    else if(sign===1){setContent()}
 }
 
 // 입력 폼 서버에 전송
@@ -172,16 +160,7 @@ function submitForm(sign){
             message: content
         }, ()=>{
             alert("성공적으로 변경하였습니다.")
-            // tokenlist의 token 전환
-            const subject = document.querySelectorAll("#tokenlist>.token")[targetForm.dataset.tokenid];
-            subject.getElementsByClassName("name")[0].innerHTML = targetForm.getElementsByClassName("inputDetail")[0].value;
-            subject.getElementsByClassName("pos")[0].innerHTML = targetForm.getElementsByClassName("inputDetail")[1].value;
-            subject.getElementsByClassName("count")[0].innerHTML = targetForm.getElementsByClassName("inputDetail")[2].value;
-            subject.getElementsByClassName("rent")[0].innerHTML = targetForm.getElementsByClassName("inputDetail")[3].value;
-            subject.getElementsByClassName("des")[0].innerHTML = targetForm.getElementsByClassName("inputDetail")[4].value;
-            // src가 존재할 경우 이미지 진행
-            subject.firstElementChild.src = targetForm.getElementsByClassName("previewImage")[0].src;
-            // targetForm.getElementsByClassName("imageFileName")[0].innerHTML = "";
+            setContent(true);
         },
         ()=>{alert("변경에 실패하였습니다. 다시시도 해주세요.")})
     }
@@ -238,17 +217,37 @@ function deleteContent(ev, force=false){
 function showContent(ev){
     // 다른 클릭 인벤트가 있을 경우 무시
     if(ev.target.onclick !== null) return 0;
-    const subject = ev.currentTarget;
-    const targetForm = document.forms[1];
-    targetForm.dataset.tokenid = subject.dataset.id;
-    targetForm.getElementsByClassName("inputDetail")[0].value = subject.getElementsByClassName("name")[0].innerHTML;
-    targetForm.getElementsByClassName("inputDetail")[1].value = subject.getElementsByClassName("pos")[0].innerHTML;
-    targetForm.getElementsByClassName("inputDetail")[2].value = subject.getElementsByClassName("count")[0].innerHTML;
-    targetForm.getElementsByClassName("inputDetail")[3].value = subject.getElementsByClassName("rent")[0].innerHTML;
-    targetForm.getElementsByClassName("inputDetail")[4].value = subject.getElementsByClassName("des")[0].innerHTML;
-    // src가 존재할 경우 이미지 진행
-    targetForm.getElementsByClassName("previewImage")[0].src = subject.firstElementChild.src;
-    targetForm.getElementsByClassName("previewImage")[0].style.height = "206px";
-    // targetForm.getElementsByClassName("imageFileName")[0].innerHTML = "";
+
+    document.forms[1].dataset.tokenid = ev.currentTarget.dataset.id;
+    setContent();
     overlayOn();
+}
+
+// 내용 설정 method
+function setContent(toToken=false){
+    const targetForm = document.forms[1];
+    const subject = document.querySelectorAll("#tokenlist>.token")[targetForm.dataset.tokenid];
+    // form => token
+    if(toToken){
+        subject.getElementsByClassName("name")[0].innerHTML = targetForm.getElementsByClassName("inputDetail")[0].value;
+        subject.getElementsByClassName("pos")[0].innerHTML = targetForm.getElementsByClassName("inputDetail")[1].value;
+        subject.getElementsByClassName("count")[0].innerHTML = targetForm.getElementsByClassName("inputDetail")[2].value;
+        subject.getElementsByClassName("rent")[0].innerHTML = targetForm.getElementsByClassName("inputDetail")[3].value;
+        subject.getElementsByClassName("des")[0].innerHTML = targetForm.getElementsByClassName("inputDetail")[4].value;
+        // src가 존재할 경우 이미지 진행
+        subject.firstElementChild.src = targetForm.getElementsByClassName("previewImage")[0].src;
+        // targetForm.getElementsByClassName("imageFileName")[0].innerHTML = "";
+    }
+    // token => form
+    else{
+        targetForm.getElementsByClassName("inputDetail")[0].value = subject.getElementsByClassName("name")[0].innerHTML;
+        targetForm.getElementsByClassName("inputDetail")[1].value = subject.getElementsByClassName("pos")[0].innerHTML;
+        targetForm.getElementsByClassName("inputDetail")[2].value = subject.getElementsByClassName("count")[0].innerHTML;
+        targetForm.getElementsByClassName("inputDetail")[3].value = subject.getElementsByClassName("rent")[0].innerHTML;
+        targetForm.getElementsByClassName("inputDetail")[4].value = subject.getElementsByClassName("des")[0].innerHTML;
+        // src가 존재할 경우 이미지 진행
+        targetForm.getElementsByClassName("previewImage")[0].src = subject.firstElementChild.src;
+        targetForm.getElementsByClassName("previewImage")[0].style.height = "206px";
+        // targetForm.getElementsByClassName("imageFileName")[0].innerHTML = "";
+    }
 }
