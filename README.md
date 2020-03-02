@@ -1,4 +1,5 @@
 # Server-Pack
+###### v0.1.0
 
 ## 서버 실행방법
 1. **서버 기본플랫폼 설치**
@@ -21,8 +22,8 @@
         > `sudo mv node-v12.16.1-linux-armv7l /opt/nodejs`
 
     4. 심볼릭 링크 걸기
-        > `sudo ln -s /opt/nodejs/bin/node /usr/bin/node`
-        > `sudo ln -s /opt/nodejs/bin/npm /usr/bin/npm`
+        > `sudo ln -s /opt/nodejs/bin/node /usr/bin/node`<br>
+        > `sudo ln -s /opt/nodejs/bin/npm /usr/bin/npm`<br>
         > `sudo ln -s /opt/nodejs/bin/npx /usr/bin/npx`
 
 2. **서버 종속모듈 설치**
