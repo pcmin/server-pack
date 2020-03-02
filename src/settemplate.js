@@ -29,19 +29,18 @@ function uploadProcess(files, sign){
 }
 
 // 토큰 양식 반환함수
-function template(name, pos, cnt, rent, des, img){return `<img src="${img}" class="thumbnail" width="100%"><div class="textgroup"><div><div class="text name" title="${name}">${name}</div><div class="text rent" title="${rent}">${rent}</div><div class="text count" title="${cnt}">${cnt}</div></div><div class="text pos" title="${pos}">${pos}</div></div><button class="btn delete" title="삭제하기" onclick="delelteToken(event)"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg></button>`;}
+function template(name, pos, cnt, rent, des, img){return `<img src="${img}" class="thumbnail" width="100%"><div class="textgroup"><div><div class="text name" title="이름:${name}">${name}</div><div class="text rent" title="대여여부:${rent}">${rent}</div><div class="text count" title="재고/수량:${cnt}">${cnt}</div></div><div class="text pos" title="위치:${pos}">${pos}</div><div class="text des">${des}</div></div><button class="btn delete" title="삭제하기" onclick="deleteContent(event)"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg></button>`;}
 
 // 토큰 추가
 function addToken(data){
     var tok = document.createElement("div");
     tok.classList.add("token");
+    tok.addEventListener("click", (ev)=>{showContent(ev)})
     tok.innerHTML = template(data.n, data.p, data.c, data.r, data.d, data.i);
     document.getElementById("tokenlist").appendChild(tok);
 }
 // 토큰 삭제
-function delelteToken(ev){
-    ev.target.parentElement.parentElement.removeChild(ev.target.parentElement);
-}
+function delelteToken(token){document.getElementById("tokenlist").removeChild(token)}
 
 // 오버레이 창 열기
 function overlayOn(){
@@ -141,8 +140,8 @@ function submitForm(sign){
     })
 }
 
+// 내용 검색하기
 function searchContent(){
-    console.log(document.getElementById("searchForm").value) // 임시***************************************
     ajaxPipe({
         method : "POST",
         url : "/search",
@@ -168,6 +167,36 @@ function searchContent(){
     })
 }
 
-function deleteContent(){
+// 내용 삭제하기
+function deleteContent(ev, force=false){
+    const targetToken = ev.currentTarget.parentElement 
+    const targetName = targetToken.getElementsByClassName("name")[0].innerHTML;
+    if(!force && !confirm(`정말로 ${targetName}의 내용을 삭제합니까?`)) return 0;
+    ajaxPipe({
+        method : "POST",
+        url : "/del",
+        message: targetName
+    }, ()=>{
+        alert("성공적으로 삭제하였습니다.");
+        delelteToken(targetToken);
+    },
+    ()=>{alert("삭제에 실패하였습니다. 다시시도 해주세요.")})
+}
 
+// 상세 내용보기 및 내용 변경창 열기
+function showContent(ev){
+    // 다른 클릭 인벤트가 있을 경우 무시
+    if(ev.target.onclick !== null) return 0;
+    const subject = ev.currentTarget;
+    const targetForm = document.forms[1];
+    targetForm.getElementsByClassName("inputDetail")[0].value = subject.getElementsByClassName("name")[0].innerHTML;
+    targetForm.getElementsByClassName("inputDetail")[1].value = subject.getElementsByClassName("pos")[0].innerHTML;
+    targetForm.getElementsByClassName("inputDetail")[2].value = subject.getElementsByClassName("count")[0].innerHTML;
+    targetForm.getElementsByClassName("inputDetail")[3].value = subject.getElementsByClassName("rent")[0].innerHTML;
+    targetForm.getElementsByClassName("inputDetail")[4].value = subject.getElementsByClassName("des")[0].innerHTML;
+    // src가 존재할 경우 이미지 진행
+    targetForm.getElementsByClassName("previewImage")[0].src = subject.firstElementChild.src;
+    targetForm.getElementsByClassName("previewImage")[0].style.height = "206px";
+    // targetForm.getElementsByClassName("imageFileName")[0].innerHTML = "";
+    overlayOn();
 }

@@ -27,10 +27,10 @@ app.post("/save", (req, res)=>{
     req.on("data", (data) => {body += data})
     req.on("end", () => {
         const data = qs.parse(body)
-        console.log("저장감지", data.n)
+        console.log("저장요청", data.n)
         fs.writeFile(`./data/${data.n}`, qs.stringify(data), "utf-8", (err)=>{
             if(err) errorExec(err)
-            console.log("저장성공", data.n)
+            console.log("저장완료", data.n)
             res.redirect("/")
         })
     })
@@ -76,6 +76,21 @@ app.post("/search", (req, res)=>{
             console.log("내용검색", query, result.length)
             res.status(200).send(String(result))
         })
+    })
+})
+
+// 내용 삭제
+app.post("/del", (req, res)=>{
+    let body = ""
+    req.on("data", (data) => {body += data})
+    req.on("end", () => {
+        const query = qs.unescape(body)
+        console.log("삭제요청", query)
+        fs.unlink("./data/"+query, (err)=>{
+            if(err) errorExec(err)
+            console.log("삭제완료", query)
+            res.status(200).send()
+        });
     })
 })
 

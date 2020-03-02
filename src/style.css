@@ -123,6 +123,7 @@ article .submitArea{margin-top: 1pc;}
 }
 .token .text.name+div{margin-left: 0.7pc;}
 .token .text.rent,.token .text.count{font-size: 0.8em;}
+.token .text.des{display: none;}
 .token>.btn{
     flex: 0 0 2pc;
     border: none;
