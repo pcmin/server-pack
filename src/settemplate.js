@@ -10,14 +10,22 @@ function imageSelect(sign){
 function uploadProcess(files, sign){
     if(!files[0]) return 0;
     console.log(files[0])
-    const fileName = `${files[0].name}(${(files[0].size/1024).toFixed(2)}kB)`;
+    // 이미지 파일만 업로드 가능
+    if(!(/^image\/.*/.test(files[0].type))){
+        alert("이미지 파일을 업로드 해주세요.");
+        return 0;
+    }
+    const fileName = files[0].name
+    const fileNameStr = `${fileName}(${(files[0].size/1024).toFixed(2)}kB)`;
     const reader = new FileReader();
     reader.readAsDataURL(files[0]);
     reader.onload = function(ev){
         try{
             const imgUrl = ev.target.result
-            document.getElementById("imageFileName"+sign).innerHTML = fileName;
+            console.log(1, imgUrl) //*** image test log **************************************************************************************** */
+            document.getElementById("imageFileName"+sign).innerHTML = fileNameStr;
             document.getElementById("previewImage"+sign).src = imgUrl;
+            document.getElementById("previewImage"+sign).title = fileName;
             if(sign===0)document.getElementById("previewImage"+sign).style.width = "100%";
             else if(sign===1)document.getElementById("previewImage"+sign).style.height = "206px";
         }
@@ -29,14 +37,15 @@ function uploadProcess(files, sign){
 }
 
 // 토큰 양식 반환함수
-function template(name, pos, cnt, rent, des, img){return `<img src="${img}" class="thumbnail" width="100%"><div class="textgroup"><div><div class="text name" title="이름:${name}">${name}</div><div class="text rent" title="대여여부:${rent}">${rent}</div><div class="text count" title="재고/수량:${cnt}">${cnt}</div></div><div class="text pos" title="위치:${pos}">${pos}</div><div class="text des">${des}</div></div><button class="btn delete" title="삭제하기" onclick="deleteContent(event)"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg></button>`;}
+function template(name, pos, cnt, rent, des, img, imgN){return `<img src="${img}" class="thumbnail" title="${imgN}" width="100%"><div class="textgroup"><div><div class="text name" title="이름:${name}">${name}</div><div class="text rent" title="대여여부:${rent}">${rent}</div><div class="text count" title="재고/수량:${cnt}">${cnt}</div></div><div class="text pos" title="위치:${pos}">${pos}</div><div class="text des">${des}</div></div><button class="btn delete" title="삭제하기" onclick="deleteContent(event)"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg></button>`;}
 
 // 토큰 추가
 function addToken(data, id){
     var tok = document.createElement("div");
     tok.classList.add("token");
     if(id!=undefined) tok.dataset.id = id;
-    tok.innerHTML = template(data.n, data.p, data.c, data.r, data.d, data.i);
+    console.log(3, data.i) //*** image test log ********************************************************************************** */
+    tok.innerHTML = template(data.n, data.p, data.c, data.r, data.d, data.i, data.in);
     tok.addEventListener("click", (ev)=>{showContent(ev)})
     document.getElementById("tokenlist").appendChild(tok);
 }
@@ -104,6 +113,7 @@ function resetForm(sign, force=false){
     if(sign===0){
         for(let i=0; i<5; i++) targetForm.getElementsByClassName("inputDetail")[i].value = "";
         targetForm.getElementsByClassName("previewImage")[0].src = "";
+        targetForm.getElementsByClassName("previewImage")[0].title = "";
         targetForm.getElementsByClassName("previewImage")[0].style.width = "auto";
         targetForm.getElementsByClassName("imageFileName")[0].innerHTML = "선택된 파일 없음";
     }
@@ -131,10 +141,14 @@ function submitForm(sign){
             // 덮어쓰기 여부 확인
             if(xhr.responseText === '1' && !confirm("같은 이름의 내용이 이미 존재합니다.\n기존내용 위에 덮어쓰기를 진행할까요?")) return 0;
             // 입력 내용 설정
-            const key = ['n','p','c','r','d','i'];
+            const key = ['n','p','c','r','d','in','i'];
             let content = "";
             for(let i=0; i<5; i++) content += `${key[i]}=${targetForm[i].value}&`;
-            content += `${key[5]}=${targetForm.getElementsByClassName("previewImage")[0].src}`;
+            content += `${key[5]}=${targetForm.getElementsByClassName("previewImage")[0].title}&`;
+            console.log(2, targetForm.getElementsByClassName("previewImage")[0].src); //*** image test log ************************************************************ */
+            let imageurl = targetForm.getElementsByClassName("previewImage")[0].src;
+            if(imageurl.startsWith("http")) imageurl = ""
+            content += `${key[6]}=${imageurl}`;
 
             // 입력 내용 제출
             ajaxPipe({
@@ -148,10 +162,11 @@ function submitForm(sign){
     // 이전 내용 변경일 경우
     else if(sign === 1){
         // 입력 내용 설정
-        const key = ['n','p','c','r','d','i'];
+        const key = ['n','p','c','r','d','in','i'];
         let content = "";
         for(let i=0; i<5; i++) content += `${key[i]}=${targetForm.getElementsByClassName("inputDetail")[i].value}&`;
-        content += `${key[5]}=${targetForm.getElementsByClassName("previewImage")[0].src}`;
+        content += `${key[5]}=${targetForm.getElementsByClassName("previewImage")[0].title}&`;
+        content += `${key[6]}=${targetForm.getElementsByClassName("previewImage")[0].src}`;
 
         // 입력 내용 제출
         ajaxPipe({
@@ -215,8 +230,12 @@ function deleteContent(ev, force=false){
 
 // 상세 내용보기 및 내용 변경창 열기
 function showContent(ev){
-    // 다른 클릭 인벤트가 있을 경우 무시
-    if(ev.target.onclick !== null) return 0;
+    // (바인딩된 노드 하위의)부모나 자신의 노드에 다른 클릭 인벤트가 있을 경우 무시
+    var node = ev.target;
+    while(node !== ev.currentTarget && node !== null){
+        if(node.onclick !== null) return 0;
+        node = node.parentElement;
+    }
 
     document.forms[1].dataset.tokenid = ev.currentTarget.dataset.id;
     setContent();
@@ -236,7 +255,7 @@ function setContent(toToken=false){
         subject.getElementsByClassName("des")[0].innerHTML = targetForm.getElementsByClassName("inputDetail")[4].value;
         // src가 존재할 경우 이미지 진행
         subject.firstElementChild.src = targetForm.getElementsByClassName("previewImage")[0].src;
-        // targetForm.getElementsByClassName("imageFileName")[0].innerHTML = "";
+        subject.firstElementChild.title = targetForm.getElementsByClassName("imageFileName")[0].innerHTML;
     }
     // token => form
     else{
@@ -245,9 +264,9 @@ function setContent(toToken=false){
         targetForm.getElementsByClassName("inputDetail")[2].value = subject.getElementsByClassName("count")[0].innerHTML;
         targetForm.getElementsByClassName("inputDetail")[3].value = subject.getElementsByClassName("rent")[0].innerHTML;
         targetForm.getElementsByClassName("inputDetail")[4].value = subject.getElementsByClassName("des")[0].innerHTML;
-        // src가 존재할 경우 이미지 진행
+        // src가 존재할 경우 이미지 진행 - 없을 경우 내용지우기
         targetForm.getElementsByClassName("previewImage")[0].src = subject.firstElementChild.src;
         targetForm.getElementsByClassName("previewImage")[0].style.height = "206px";
-        // targetForm.getElementsByClassName("imageFileName")[0].innerHTML = "";
+        targetForm.getElementsByClassName("imageFileName")[0].innerHTML = subject.firstElementChild.title;
     }
 }

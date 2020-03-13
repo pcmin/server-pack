@@ -19,7 +19,7 @@ app.get("/", (req, res)=>{
         .send(homeTemplate)
 })
 
-// 물품저장호출
+// 내용 저장 요청
 app.post("/save", (req, res)=>{
     let body = ""
     req.on("data", (data) => {body += data})
@@ -94,6 +94,7 @@ app.post("/del", (req, res)=>{
 
 // 스크립트 자원소스
 app.use('/src', express.static(__dirname + "/src"));
+
 // 페이지 오류
 app.use((req, res, next)=>{res.status(404).send('Not Found')})
 // 서버 해당port로 실행
