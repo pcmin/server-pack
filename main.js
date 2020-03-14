@@ -11,6 +11,15 @@ function errorExec(err){
     throw err;
 }
 
+// lowdb를 file-async로 처리
+// ASYNC >> https://github.com/typicode/lowdb/tree/master/examples
+// API   >> https://github.com/typicode/lowdb
+// 각 라우팅 내부에 주석 처리된 부분이 이전 파일처리 부분입니다.
+const low = require("lowdb")
+const FileASync = require("lowdb/adapters/FileASync")
+if(!fs.existsSync("data")) fs.mkdirSync("data")
+low(new FileASync("data/db.json")).then(db => {
+
 // 홈페이지
 app.get("/", (req, res)=>{
     const homeTemplate = fs.readFileSync("index.html", "utf-8")
@@ -26,11 +35,32 @@ app.post("/save", (req, res)=>{
     req.on("end", () => {
         const data = qs.parse(body)
         console.log("저장요청", data.n)
-        fs.writeFile(`./data/${data.n}`, qs.stringify(data), "utf-8", (err)=>{
-            if(err) errorExec(err)
-            console.log("저장완료", data.n)
+
+        // fs.writeFile(`./data/${data.n}`, qs.stringify(data), "utf-8", (err)=>{
+        //     if(err) errorExec(err)
+        //     console.log("저장완료", data.n)
+        //     res.redirect("/")
+        // })
+
+        if(db.get("items").filter({n:data.n}).value().length===0){
+            // 추가
+            db.get("items")
+              .push(data)
+              .write()
+              .then(() => {console.log("추가저장완료", data.n)})
+            db.update('count', n => n + 1)
+              .write() // 총 개수 변경
             res.redirect("/")
-        })
+        }
+        else{
+            // 변경
+            db.get("items")
+              .find({n: data.n})
+              .assign(data)
+              .write()
+              .then(() => {console.log("변경저장완료", data.n, data)})
+            res.redirect("/")
+        }
     })
 })
 
@@ -40,12 +70,17 @@ app.post("/check", (req, res)=>{
     req.on("data", (data) => {body += data})
     req.on("end", () => {
         const name = qs.unescape(body)
-        fs.readdir("./data", (err, files)=>{
-            if(err) errorExec(err)
-            const result = files.indexOf(name)===-1?'0':'1'
-            console.log("중복조사", name, result)
-            res.status(200).send(result)
-        })
+
+        // fs.readdir("./data", (err, files)=>{
+        //     if(err) errorExec(err)
+        //     const result = files.indexOf(name)===-1?'0':'1'
+        //     console.log("중복조사", name, result)
+        //     res.status(200).send(result)
+        // })
+
+        const result = db.get("items").filter({n:name}).value().length===0?'0':'1'
+        console.log("중복조사", name, result)
+        res.status(200).send(result)
     })
 })
 
@@ -55,25 +90,53 @@ app.post("/search", (req, res)=>{
     req.on("data", (data) => {body += data})
     req.on("end", () => {
         const query = qs.unescape(body)
-        fs.readdir("./data", (err, files)=>{
-            if(err) errorExec(err)
-            let result = [];
-            // 전체검색인 경우
-            if(query === ""){
-                for(i in files){
-                    result.push(fs.readFileSync("./data/"+files[i], "utf-8"));
-                }
-            }
-            // 이름값 포함하는 경우
-            else{
-                for(i in files){
-                    if(files[i].indexOf(query)===-1) continue;
-                    result.push(fs.readFileSync("./data/"+files[i], "utf-8"));
-                }
-            }
-            console.log("내용검색", query, result.length)
-            res.status(200).send(String(result))
-        })
+
+        // fs.readdir("./data", (err, files)=>{
+        //     if(err) errorExec(err)
+        //     let result = [];
+        //     // 전체검색인 경우
+        //     if(query === ""){
+        //         for(i in files){
+        //             result.push(fs.readFileSync("./data/"+files[i], "utf-8"));
+        //         }
+        //     }
+        //     // 이름값 포함하는 경우
+        //     else{
+        //         for(i in files){
+        //             if(files[i].indexOf(query)===-1) continue;
+        //             result.push(fs.readFileSync("./data/"+files[i], "utf-8"));
+        //         }
+        //     }
+        //     console.log("내용검색", query, result.length)
+        //     res.status(200).send(String(result))
+        // })
+
+        let result = [];
+        // 전체검색인 경우
+        if(query === ""){
+            result = db.get("items").value()
+        }
+        // 이름값 포함하는 경우
+        else{
+            result = db.get("items")
+                .filter((item) => {
+                    const key = ['n','p','c','r','d','in','i'];
+                    for(let i=0; i<key.length; i++){
+                        if(item[key].indexOf(query)!==-1) return true;
+                    }
+                    return false;
+                })
+                .value()
+        }
+        console.log("내용검색", query, result.length)
+        // 쿼리배열형태로 변환
+        const len = result.length;
+        let resultBuf = [];
+        for(let i=0; i<len; i++){
+            resultBuf.push(qs.stringify(result[i]))
+        }
+
+        res.status(200).send(String(resultBuf))
     })
 })
 
@@ -84,11 +147,18 @@ app.post("/del", (req, res)=>{
     req.on("end", () => {
         const query = qs.unescape(body)
         console.log("삭제요청", query)
-        fs.unlink("./data/"+query, (err)=>{
-            if(err) errorExec(err)
-            console.log("삭제완료", query)
-            res.status(200).send()
-        });
+
+        // fs.unlink("./data/"+query, (err)=>{
+        //     if(err) errorExec(err)
+        //     console.log("삭제완료", query)
+        //     res.status(200).send()
+        // });
+
+        db.get("items")
+          .remove({n: query})
+          .write()
+          .then(() => {console.log("삭제완료", query)})
+        res.status(200).send()
     })
 })
 
@@ -97,5 +167,12 @@ app.use('/src', express.static(__dirname + "/src"));
 
 // 페이지 오류
 app.use((req, res, next)=>{res.status(404).send('Not Found')})
-// 서버 해당port로 실행
-app.listen(port, ()=>{console.log(`Web app listening on port ${port}!`)})
+
+// db 기본값 세팅
+return db.defaults({ items: [], count: 0 }).write()
+
+})
+.then(() => {
+    // 서버 해당port로 실행
+    app.listen(port, ()=>{console.log(`Web app listening on port ${port}!`)})
+})
