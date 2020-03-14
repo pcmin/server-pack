@@ -40,10 +40,10 @@ function uploadProcess(files, sign){
 function template(name, pos, cnt, rent, des, img, imgN){return `<img src="${img}" class="thumbnail" title="${imgN}" width="100%"><div class="textgroup"><div><div class="text name" title="이름:${name}">${name}</div><div class="text rent" title="대여여부:${rent}">${rent}</div><div class="text count" title="재고/수량:${cnt}">${cnt}</div></div><div class="text pos" title="위치:${pos}">${pos}</div><div class="text des">${des}</div></div><button class="btn delete" title="삭제하기" onclick="deleteContent(event)"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg></button>`;}
 
 // 토큰 추가
-function addToken(data, id){
+function addToken(data){
     var tok = document.createElement("div");
     tok.classList.add("token");
-    if(id!=undefined) tok.dataset.id = id;
+    tok.dataset.id = data.n;
     console.log(3, data.i) //*** image test log ********************************************************************************** */
     tok.innerHTML = template(data.n, data.p, data.c, data.r, data.d, data.i, data.in);
     tok.addEventListener("click", (ev)=>{showContent(ev)})
@@ -203,7 +203,7 @@ function searchContent(){
                 while((obj = reg.exec(contentlist[i])) !== null){
                     data[obj[1]] = decodeURIComponent(obj[2]);
                 }
-                addToken(data, i);
+                addToken(data);
             }
         }
     })
@@ -236,7 +236,7 @@ function showContent(ev){
         if(node.onclick !== null) return 0;
         node = node.parentElement;
     }
-
+    
     document.forms[1].dataset.tokenid = ev.currentTarget.dataset.id;
     setContent();
     overlayOn();
@@ -245,7 +245,7 @@ function showContent(ev){
 // 내용 설정 method
 function setContent(toToken=false){
     const targetForm = document.forms[1];
-    const subject = document.querySelectorAll("#tokenlist>.token")[targetForm.dataset.tokenid];
+    const subject = document.querySelector(`#tokenlist>.token[data-id='${targetForm.dataset.tokenid}']`);
     // form => token
     if(toToken){
         subject.getElementsByClassName("name")[0].innerHTML = targetForm.getElementsByClassName("inputDetail")[0].value;

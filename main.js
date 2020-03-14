@@ -120,6 +120,8 @@ app.post("/del", (req, res)=>{
           .remove({n: query})
           .write()
           .then(() => {console.log("삭제완료", query)})
+        db.update('count', n => n - 1)
+          .write() // 총 개수 변경
         res.status(200).send()
     })
 })
