@@ -14,7 +14,6 @@ function errorExec(err){
 // lowdb를 file-async로 처리
 // ASYNC >> https://github.com/typicode/lowdb/tree/master/examples
 // API   >> https://github.com/typicode/lowdb
-// 각 라우팅 내부에 주석 처리된 부분이 이전 파일처리 부분입니다.
 const low = require("lowdb")
 const FileASync = require("lowdb/adapters/FileASync")
 if(!fs.existsSync("data")) fs.mkdirSync("data")
@@ -27,6 +26,8 @@ app.get("/", (req, res)=>{
         .type('text/html')
         .send(homeTemplate)
 })
+// 스크립트 자원소스
+app.use('/src', express.static(__dirname + "/src"));
 
 // 내용 저장 요청
 app.post("/save", (req, res)=>{
@@ -35,12 +36,6 @@ app.post("/save", (req, res)=>{
     req.on("end", () => {
         const data = qs.parse(body)
         console.log("저장요청", data.n)
-
-        // fs.writeFile(`./data/${data.n}`, qs.stringify(data), "utf-8", (err)=>{
-        //     if(err) errorExec(err)
-        //     console.log("저장완료", data.n)
-        //     res.redirect("/")
-        // })
 
         if(db.get("items").filter({n:data.n}).value().length===0){
             // 추가
@@ -71,13 +66,6 @@ app.post("/check", (req, res)=>{
     req.on("end", () => {
         const name = qs.unescape(body)
 
-        // fs.readdir("./data", (err, files)=>{
-        //     if(err) errorExec(err)
-        //     const result = files.indexOf(name)===-1?'0':'1'
-        //     console.log("중복조사", name, result)
-        //     res.status(200).send(result)
-        // })
-
         const result = db.get("items").filter({n:name}).value().length===0?'0':'1'
         console.log("중복조사", name, result)
         res.status(200).send(result)
@@ -90,26 +78,6 @@ app.post("/search", (req, res)=>{
     req.on("data", (data) => {body += data})
     req.on("end", () => {
         const query = qs.unescape(body)
-
-        // fs.readdir("./data", (err, files)=>{
-        //     if(err) errorExec(err)
-        //     let result = [];
-        //     // 전체검색인 경우
-        //     if(query === ""){
-        //         for(i in files){
-        //             result.push(fs.readFileSync("./data/"+files[i], "utf-8"));
-        //         }
-        //     }
-        //     // 이름값 포함하는 경우
-        //     else{
-        //         for(i in files){
-        //             if(files[i].indexOf(query)===-1) continue;
-        //             result.push(fs.readFileSync("./data/"+files[i], "utf-8"));
-        //         }
-        //     }
-        //     console.log("내용검색", query, result.length)
-        //     res.status(200).send(String(result))
-        // })
 
         let result = [];
         // 전체검색인 경우
@@ -148,12 +116,6 @@ app.post("/del", (req, res)=>{
         const query = qs.unescape(body)
         console.log("삭제요청", query)
 
-        // fs.unlink("./data/"+query, (err)=>{
-        //     if(err) errorExec(err)
-        //     console.log("삭제완료", query)
-        //     res.status(200).send()
-        // });
-
         db.get("items")
           .remove({n: query})
           .write()
@@ -161,9 +123,6 @@ app.post("/del", (req, res)=>{
         res.status(200).send()
     })
 })
-
-// 스크립트 자원소스
-app.use('/src', express.static(__dirname + "/src"));
 
 // 페이지 오류
 app.use((req, res, next)=>{res.status(404).send('Not Found')})
