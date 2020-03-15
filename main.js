@@ -79,19 +79,21 @@ app.post("/search", (req, res)=>{
     req.on("end", () => {
         const query = qs.unescape(body)
 
-        let result = [];
+        let result = null;
         // 전체검색인 경우
         if(query === ""){
             result = db.get("items").value()
         }
-        // 이름값 포함하는 경우
+        // 쿼리값 포함하는 경우
         else{
             result = db.get("items")
                 .filter((item) => {
-                    const key = ['n','p','c','r','d','in','i'];
-                    for(let i=0; i<key.length; i++){
-                        if(item[key].indexOf(query)!==-1) return true;
-                    }
+                    if( item.n.indexOf(query)!==-1 ||
+                        item.p.indexOf(query)!==-1 ||
+                        item.c.indexOf(query)!==-1 ||
+                        item.r.indexOf(query)!==-1 ||
+                        item.d.indexOf(query)!==-1 ||
+                        item.in.indexOf(query)!==-1 ) return true;
                     return false;
                 })
                 .value()

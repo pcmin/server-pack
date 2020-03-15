@@ -1,10 +1,10 @@
 # Quick Command
 **서버실행**
 
-    일반 실행
+    # 일반 실행
     $ pm2 start main.js --name main
 
-    개발자 테스트 실행
+    # 개발자 테스트 실행
     $ pm2 start main.js --name main --watch --ignore-watch="data/*"
 
 
@@ -29,7 +29,7 @@
 
 **서버로그에서 나오기**
     
-    각 Bash/Terminal에서의 Break Signal로 exit
+    # 각 Bash/Terminal에서의 Break Signal로 exit
     $ (In general) Ctrl + C
 
 
