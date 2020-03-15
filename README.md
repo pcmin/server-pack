@@ -14,24 +14,28 @@
     ✔ *라즈베리파이3 B+* 일 경우 아래의 절차를 참고 (자료출처:https://www.kimnjang.com/104)
     
     1. *Linux Binaries(ARM)의 v7*버전을 다운받으면 됩니다. 또는 터미널을 열고 아래를 입력, (20.02.26기준 LTS버전: v12.16.1)
-        > `wget https://nodejs.org/dist/v12.16.1/node-v12.16.1-linux-armv7l.tar.xz`
+
+           $ wget https://nodejs.org/dist/v12.16.1/node-v12.16.1-linux-armv7l.tar.xz
 
     2. 이후 압축을 풀고
-        > `tar -xvf node-v12.16.1-linux-armv7l.tar.xz`
+
+           $ tar -xvf node-v12.16.1-linux-armv7l.tar.xz
 
     3. `/opt/nodejs`로 폴더를 이동
-        > `sudo mv node-v12.16.1-linux-armv7l /opt/nodejs`
+
+           $ sudo mv node-v12.16.1-linux-armv7l /opt/nodejs
 
     4. 심볼릭 링크 걸기
-        > `sudo ln -s /opt/nodejs/bin/node /usr/bin/node`<br>
-        > `sudo ln -s /opt/nodejs/bin/npm /usr/bin/npm`<br>
-        > `sudo ln -s /opt/nodejs/bin/npx /usr/bin/npx`
+
+           $ sudo ln -s /opt/nodejs/bin/node /usr/bin/node
+           $ sudo ln -s /opt/nodejs/bin/npm /usr/bin/npm
+           $ sudo ln -s /opt/nodejs/bin/npx /usr/bin/npx
 
 2. **서버 종속모듈 설치**
 
     프롬프트나 터미널에
 
-    > `npm install`
+       $ npm install
 
     를 입력하여 서버에 필요한 모듈을 설치해줍니다. (30초정도 걸립니다)
 
@@ -39,7 +43,7 @@
 
     프롬프트나 터미널에
 
-    > `npm install pm2 -g`
+       $ npm install pm2 -g
 
     를 입력하여 Process Manager인 PM2를 설치합니다.
 
@@ -47,7 +51,7 @@
 
     현 디렉토리에서 프롬프트나 터미널에
 
-    > `pm2 start main.js --name main`
+       $ pm2 start main.js --name main
 
     를 입력하여 서버를 실행합니다.
     추가적으로 서버 실행 옵션은 [링크](./doc/pm2-command-manual.md)를 참조
@@ -61,14 +65,15 @@
 
 - **서버 실시간 로그 확인하는 방법**
 
-    서버에서 이루어진 처리나 오류 관련 내역을 파악하면 빠르게 서버를 유지보수할 수 있습니다. 떄문에 서버 프로세스 도중에도 로그를 조회할 수 있어야 합니다.
+    서버에서 이루어진 처리나 오류 관련 내역을 파악하면 빠르게 서버를 유지보수할 수 있습니다. 때문에 서버 프로세스 도중에도 로그를 조회할 수 있어야 합니다.
     로그를 확인하는 방법은 아래와 같습니다.
 
     프롬프트나 터미널에
 
-    > `pm2 log`
+      $ pm2 log
 
     를 입력하여 실시간으로 출력되는 서버 로그들을 확인하실 수 있습니다.
+
 
 - **서버 중지및 재시작**
 
@@ -76,11 +81,11 @@
 
     프롬프트나 터미널에
 
-    > `pm2 stop main`
+      $ pm2 stop main
 
     를 입력하여 일시적으로 중지하여도 되고, 완전히 프로세스 지원을 중단하고자 한다면
 
-    > `pm2 delete main`
+      $ pm2 delete main
 
     를 입력하여 중단할 수 있습니다.
 
@@ -88,10 +93,20 @@
 
     `pm2 stop main`을 통해 중지된 프로세스일 경우 프롬프트나 터미널에
 
-    > `pm2 restart main`
+      $ pm2 restart main
 
     를 입력하여 바로 다시 서버를 재시작할 수 있으나
 
     `pm2 delete main`를 통해 프로세스를 중단하였거나
     서버컴퓨터를 재시작하여 pm2 list에 해당 프로세스가 없을 경우
+
     위의 _**서버 실행방법의 4번 항목**_ 부터 진행하시면 됩니다.
+
+
+- **서버 개발자 모드로 실행**
+
+    서버 프로세스에 필요한 디렉토리 아래의 파일을 변경을 해야하거나 그러한 변경에 관해 테스트를 해보아야할 경우 아래의 command를 입력합니다. 파일 변경을 감지하고 자동으로 바로 reload를 진행합니다.
+
+      $ pm2 start main.js --name main --watch --ignore-watch="data/*"
+    
+    그러나 서버 프로세스를 진행중일 경우 해당 `main.js`파일로 테스트하는 것을 권장하지 않습니다. 다른 테스트 파일로 변경하여 다른 프로세스를 통해 먼저 테스트를 하고 반영할 것을 권장합니다.
