@@ -37,7 +37,7 @@ function uploadProcess(files, sign){
 }
 
 // 토큰 양식 반환함수
-function template(name, pos, cnt, rent, des, img, imgN){return `<img src="${img}" class="thumbnail" title="${imgN}" width="100%"><div class="textgroup"><div><div class="text name" title="이름:${name}">${name}</div><div class="text rent" title="대여여부:${rent}">${rent}</div><div class="text count" title="재고/수량:${cnt}">${cnt}</div></div><div class="text pos" title="위치:${pos}">${pos}</div><div class="text des">${des}</div></div><button class="btn delete" title="삭제하기" onclick="deleteContent(event)"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg></button>`;}
+function template(name, pos, cnt, tot, des, img, imgN){return `<img src="${img}" class="thumbnail" title="${imgN}" width="100%"><div class="textgroup"><div><div class="text name" title="이름:${name}">${name}</div><div class="text count" title="현재 수량:${cnt}">${cnt}</div>/<div class="text total" title="총 재고량:${tot}">${tot}</div></div><div class="text pos" title="위치:${pos}">${pos}</div><div class="text des">${des}</div></div><button class="btn delete" title="삭제하기" onclick="deleteContent(event)"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg></button>`;}
 
 // 토큰 추가
 function addToken(data){
@@ -45,7 +45,7 @@ function addToken(data){
     tok.classList.add("token");
     tok.dataset.id = data.n;
     console.log(3, data.i) //*** image test log ********************************************************************************** */
-    tok.innerHTML = template(data.n, data.p, data.c, data.r, data.d, data.i, data.in);
+    tok.innerHTML = template(data.n, data.p, data.c, data.t, data.d, data.i, data.in);
     tok.addEventListener("click", (ev)=>{showContent(ev)})
     document.getElementById("tokenlist").appendChild(tok);
 }
@@ -141,7 +141,7 @@ function submitForm(sign){
             // 덮어쓰기 여부 확인
             if(xhr.responseText === '1' && !confirm("같은 이름의 내용이 이미 존재합니다.\n기존내용 위에 덮어쓰기를 진행할까요?")) return 0;
             // 입력 내용 설정
-            const key = ['n','p','c','r','d','in','i'];
+            const key = ['n','p','c','t','d','in','i'];
             let content = "";
             for(let i=0; i<5; i++) content += `${key[i]}=${targetForm[i].value}&`;
             content += `${key[5]}=${targetForm.getElementsByClassName("previewImage")[0].title}&`;
@@ -162,7 +162,7 @@ function submitForm(sign){
     // 이전 내용 변경일 경우
     else if(sign === 1){
         // 입력 내용 설정
-        const key = ['n','p','c','r','d','in','i'];
+        const key = ['n','p','c','t','d','in','i'];
         let content = "";
         for(let i=0; i<5; i++) content += `${key[i]}=${targetForm.getElementsByClassName("inputDetail")[i].value}&`;
         content += `${key[5]}=${targetForm.getElementsByClassName("previewImage")[0].title}&`;
@@ -251,7 +251,7 @@ function setContent(toToken=false){
         subject.getElementsByClassName("name")[0].innerHTML = targetForm.getElementsByClassName("inputDetail")[0].value;
         subject.getElementsByClassName("pos")[0].innerHTML = targetForm.getElementsByClassName("inputDetail")[1].value;
         subject.getElementsByClassName("count")[0].innerHTML = targetForm.getElementsByClassName("inputDetail")[2].value;
-        subject.getElementsByClassName("rent")[0].innerHTML = targetForm.getElementsByClassName("inputDetail")[3].value;
+        subject.getElementsByClassName("total")[0].innerHTML = targetForm.getElementsByClassName("inputDetail")[3].value;
         subject.getElementsByClassName("des")[0].innerHTML = targetForm.getElementsByClassName("inputDetail")[4].value;
         // src가 존재할 경우 이미지 진행
         subject.firstElementChild.src = targetForm.getElementsByClassName("previewImage")[0].src;
@@ -262,7 +262,7 @@ function setContent(toToken=false){
         targetForm.getElementsByClassName("inputDetail")[0].value = subject.getElementsByClassName("name")[0].innerHTML;
         targetForm.getElementsByClassName("inputDetail")[1].value = subject.getElementsByClassName("pos")[0].innerHTML;
         targetForm.getElementsByClassName("inputDetail")[2].value = subject.getElementsByClassName("count")[0].innerHTML;
-        targetForm.getElementsByClassName("inputDetail")[3].value = subject.getElementsByClassName("rent")[0].innerHTML;
+        targetForm.getElementsByClassName("inputDetail")[3].value = subject.getElementsByClassName("total")[0].innerHTML;
         targetForm.getElementsByClassName("inputDetail")[4].value = subject.getElementsByClassName("des")[0].innerHTML;
         // src가 존재할 경우 이미지 진행 - 없을 경우 내용지우기
         targetForm.getElementsByClassName("previewImage")[0].src = subject.firstElementChild.src;

@@ -91,7 +91,7 @@ app.post("/search", (req, res)=>{
                     if( item.n.indexOf(query)!==-1 ||
                         item.p.indexOf(query)!==-1 ||
                         item.c.indexOf(query)!==-1 ||
-                        item.r.indexOf(query)!==-1 ||
+                        item.t.indexOf(query)!==-1 ||
                         item.d.indexOf(query)!==-1 ||
                         item.in.indexOf(query)!==-1 ) return true;
                     return false;
