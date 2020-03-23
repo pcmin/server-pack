@@ -270,3 +270,7 @@ function setContent(toToken=false){
         targetForm.getElementsByClassName("imageFileName")[0].innerHTML = subject.firstElementChild.title;
     }
 }
+
+function historyToggle(){
+    document.getElementById("positionHistory").style.display = "none";
+}

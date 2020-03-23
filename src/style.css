@@ -71,17 +71,14 @@ article .submitArea{margin-top: 1pc;}
 .submitArea>.btn.cancel{float: right !important;}
 
 #searchBtn{
-    flex: 0 0 auto;
     border: 1px inset rgba(0, 0, 0, 0.18);
     width: 2.3pc;
     height: 2.3pc;
     background-color: white;
+    border-right: none;
 }
 #searchArticle .btn:hover{background-color: hsl(0, 0%, 87%);}
-#searchForm{
-    border: 1px inset rgba(0, 0, 0, 0.18);
-    border-left: none;
-}
+#searchForm{border: 1px inset rgba(0, 0, 0, 0.18);}
 
 #listContainer{
     background-color: hsl(0, 0%, 93%);
@@ -155,6 +152,15 @@ article .submitArea{margin-top: 1pc;}
     flex: 0 0 206px !important;
     margin-top: 1pc;
 }
+#overlay #positionListBtn{
+    width: 2.3pc;
+    background-color: white;
+    border: 1px solid #aeaeae;
+    border-right: none;
+}
+#positionHistory{
+    padding-top: 0.5pc;
+}
 
 .stretchContainer{
     display: flex;
@@ -165,6 +171,7 @@ article .submitArea{margin-top: 1pc;}
 
 .equalContainer{display: flex;}
 .equalContainer>*:first-child{flex: auto;}
+.equalContainer .btn.holdSize{flex: 0 0 auto;}
 
 .centerContainer{
     display: flex;
