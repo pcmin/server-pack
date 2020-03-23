@@ -29,13 +29,24 @@ app.get("/", (req, res)=>{
 // 스크립트 자원소스
 app.use('/src', express.static(__dirname + "/src"));
 
-// 내용 저장 요청
+// 아이템 추가, 내용 변경
 app.post("/save", (req, res)=>{
     let body = ""
     req.on("data", (data) => {body += data})
     req.on("end", () => {
         const data = qs.parse(body)
         console.log("저장요청", data.n)
+
+        const positionVal = data.p
+        delete data.p //위치값 분리
+        if(positionVal !== ""){ //빈 위치값이 아닐 경우 저장
+            db.get("position")
+              .push({
+                  id: data.n,
+                  p: positionVal
+              })
+              .write()
+        }
 
         if(db.get("items").filter({n:data.n}).value().length===0){
             // 추가
@@ -59,7 +70,7 @@ app.post("/save", (req, res)=>{
     })
 })
 
-// 중복이름 조회
+// 특정 아이템의 이름 중복 조회
 app.post("/check", (req, res)=>{
     let body = ""
     req.on("data", (data) => {body += data})
@@ -72,7 +83,7 @@ app.post("/check", (req, res)=>{
     })
 })
 
-// 내용 요청
+// 아이템 전체 내용 조회
 app.post("/search", (req, res)=>{
     let body = ""
     req.on("data", (data) => {body += data})
@@ -84,12 +95,11 @@ app.post("/search", (req, res)=>{
         if(query === ""){
             result = db.get("items").value()
         }
-        // 쿼리값 포함하는 경우
+        // 쿼리값 포함하는 경우, 위치에 대한 조사제외
         else{
             result = db.get("items")
                 .filter((item) => {
                     if( item.n.indexOf(query)!==-1 ||
-                        item.p.indexOf(query)!==-1 ||
                         item.c.indexOf(query)!==-1 ||
                         item.t.indexOf(query)!==-1 ||
                         item.d.indexOf(query)!==-1 ||
@@ -103,14 +113,23 @@ app.post("/search", (req, res)=>{
         const len = result.length;
         let resultBuf = [];
         for(let i=0; i<len; i++){
-            resultBuf.push(qs.stringify(result[i]))
+            // 위치리스트 반환
+            const positionResult = db.get("position")
+                            .filter({n:result[i].n})
+                            .value()
+            let posBuf = [];
+            for (i in positionResult){
+                posBuf.push(positionResult[i].p);
+            }
+            
+            resultBuf.push(qs.stringify(result[i])+"&p="+qs.stringify(posBuf))
         }
 
         res.status(200).send(String(resultBuf))
     })
 })
 
-// 내용 삭제
+// 아이템 삭제
 app.post("/del", (req, res)=>{
     let body = ""
     req.on("data", (data) => {body += data})
@@ -118,6 +137,7 @@ app.post("/del", (req, res)=>{
         const query = qs.unescape(body)
         console.log("삭제요청", query)
 
+        // 위치값은 따로 삭제하지 않고 자주 보관되는 장소에 대한 정보로 축적
         db.get("items")
           .remove({n: query})
           .write()
@@ -128,11 +148,56 @@ app.post("/del", (req, res)=>{
     })
 })
 
+/* 이 이후에 대한 기능들은 테스트는 물론 제대로 완성되지 않은 기능들입니다. lowdb API에 대한 자료가 없어 우선 커밋후 진행합니다 ***************************************************/
+// 아이템 과거위치값 조회
+app.post("locate", (req, res)=>{
+    let body = ""
+    req.on("data", (data) => {body += data})
+    req.on("end", () => {
+
+        function lastlocate(name){
+            return db.get("position").filter({n:name}).value()[0];
+        }
+
+        body = qs.unescape(body)
+        // message 
+        if(body.indexOf(',')===-1){ //생략이 되었을 경우
+            // 가장 최근 위치값 불러오기
+            lastlocate(body);
+        }
+        else{
+            const query = qs.unescape(body).split(',');
+            if(query[1].trim()==="" || isNaN(Number(query[1]))){ //숫자 이외의 값이 생략이 되었을 경우
+                // 가장 최근 위치값 불러오기
+                lastlocate(body);
+            }
+            else{ //숫자일 경우
+                // 해당 숫자의 위치값 불러오기,숫자에 해당하는 위치값이 없을 경우 최근 위치값
+                db.get("position").filter({n:query[0]}).value()[query[1]]
+            }
+        }
+        res.status(200).send()
+    })
+})
+
+// 아이템 위치값 변경
+app.post("savelocate", (req, res)=>{
+    let body = ""
+    req.on("data", (data) => {body += data})
+    req.on("end", () => {
+        // body = 이름, 위치값[위치이름,alpha,beta,gamma], 스택신호
+
+        // 이름에 해당하는 위치리스트
+        // 그 중에 스택신호에 해당하는 인덱스에 위치값 설정
+        // 그 후 //res.status(200).send()
+    })
+})
+
 // 페이지 오류
 app.use((req, res, next)=>{res.status(404).send('Not Found')})
 
 // db 기본값 세팅
-return db.defaults({ items: [], count: 0 }).write()
+return db.defaults({ items: [], count: 0, position: [] }).write()
 
 })
 .then(() => {
