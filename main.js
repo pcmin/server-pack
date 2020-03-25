@@ -55,6 +55,11 @@ app.post("/save", (req, res)=>{
             else{
                 // 변경
                 let set_expr = "";
+                // 변경할 내용 쿼리문자열로 지정
+                for(i in data){
+                    if(i == 'n') continue;
+                    set_expr += `${i}=${data[i]},`
+                }
                 connectionDB.query(
                     `UPDATE item SET ${set_expr} WHERE n=${items[0].n}`,
                     (err, items)=>{
