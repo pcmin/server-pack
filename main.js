@@ -14,14 +14,6 @@ function errorExec(err){
     throw err;
 }
 
-// lowdb를 file-async로 처리
-// ASYNC >> https://github.com/typicode/lowdb/tree/master/examples
-// API   >> https://github.com/typicode/lowdb
-// const low = require("lowdb")
-// const FileASync = require("lowdb/adapters/FileASync")
-// if(!fs.existsSync("data")) fs.mkdirSync("data")
-// low(new FileASync("data/db.json")).then(db => {
-
 // 홈페이지
 app.get("/", (req, res)=>{
     const homeTemplate = fs.readFileSync("index.html", "utf-8")
@@ -39,38 +31,6 @@ app.post("/save", (req, res)=>{
     req.on("end", () => {
         const data = qs.parse(body)
         console.log("저장요청", data.n)
-
-        // const positionVal = data.p
-        // delete data.p //위치값 분리
-
-        // if(positionVal !== ""){ //빈 위치값이 아닐 경우 저장
-        //     db.get("position")
-        //       .push({
-        //           id: data.n,
-        //           p: positionVal
-        //       })
-        //       .write()
-        // }
-
-        // if(db.get("items").filter({n:data.n}).value().length===0){
-        //     // 추가
-        //     db.get("items")
-        //       .push(data)
-        //       .write()
-        //       .then(() => {console.log("추가저장완료", data.n)})
-        //     db.update('count', n => n + 1)
-        //       .write() // 총 개수 변경
-        //     res.redirect("/")
-        // }
-        // else{
-        //     // 변경
-        //     db.get("items")
-        //       .find({n: data.n})
-        //       .assign(data)
-        //       .write()
-        //       .then(() => {console.log("변경저장완료", data.n, data)})
-        //     res.redirect("/")
-        // }
 
         // 위치 저장
         if(data.p !== ""){
@@ -114,8 +74,6 @@ app.post("/check", (req, res)=>{
     req.on("end", () => {
         const name = qs.unescape(body)
 
-        // const result = db.get("items").filter({n:name}).value().length===0?'0':'1'
-
         connectionDB.query(
             `SELECT n FROM item WHERE n=${data.n}`,
             (err, items)=>{
@@ -133,41 +91,7 @@ app.post("/search", (req, res)=>{
     req.on("data", (data) => {body += data})
     req.on("end", () => {
         const query = qs.unescape(body)
-
         let result = [];
-        // // 전체검색인 경우
-        // if(query === ""){
-        //     result = db.get("items").value()
-        // }
-        // // 쿼리값 포함하는 경우, 위치에 대한 조사제외
-        // else{
-        //     result = db.get("items")
-        //         .filter((item) => {
-        //             if( item.n.indexOf(query)!==-1 ||
-        //                 item.c.indexOf(query)!==-1 ||
-        //                 item.t.indexOf(query)!==-1 ||
-        //                 item.d.indexOf(query)!==-1 ||
-        //                 item.in.indexOf(query)!==-1 ) return true;
-        //             return false;
-        //         })
-        //         .value()
-        // }
-        // console.log("내용검색", query, result.length)
-        // // 쿼리배열형태로 변환
-        // const len = result.length;
-        // let resultBuf = [];
-        // for(let i=0; i<len; i++){
-        //     // 위치리스트 반환
-        //     const positionResult = db.get("position")
-        //                     .filter({n:result[i].n})
-        //                     .value()
-        //     let posBuf = [];
-        //     for (i in positionResult){
-        //         posBuf.push(positionResult[i].p);
-        //     }
-            
-        //     resultBuf.push(qs.stringify(result[i])+"&p="+qs.stringify(posBuf))
-        // }
 
         // 전체검색인 경우
         if(query === ""){
@@ -209,14 +133,6 @@ app.post("/del", (req, res)=>{
     req.on("end", () => {
         const query = qs.unescape(body)
         console.log("삭제요청", query)
-
-        // 위치값은 따로 삭제하지 않고 자주 보관되는 장소에 대한 정보로 축적
-        // db.get("items")
-        //   .remove({n: query})
-        //   .write()
-        //   .then(() => {console.log("삭제완료", query)})
-        // db.update('count', n => n - 1)
-        //   .write() // 총 개수 변경
 
         connectionDB.query(
             `DELETE item WHERE n=${query}`,
@@ -276,13 +192,5 @@ app.post("savelocate", (req, res)=>{
 // 페이지 오류
 app.use((req, res, next)=>{res.status(404).send('Not Found')})
 
-// db 기본값 세팅
-// return db.defaults({ items: [], count: 0, position: [] }).write()
-
-// })
-// .then(() => {
-
-    // 서버 해당port로 실행
-    app.listen(port, ()=>{console.log(`Web app listening on port ${port}!`)})
-
-// })
+// 서버 해당port로 실행
+app.listen(port, ()=>{console.log(`Web app listening on port ${port}!`)})
