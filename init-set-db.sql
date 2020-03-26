@@ -14,5 +14,6 @@ CREATE TABLE `item`(
 
 CREATE TABLE `position`(
     `item` TEXT NOT NULL,
-    `content` TEXT
+    `content` TEXT,
+    `date` DATETIME
 );

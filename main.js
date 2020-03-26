@@ -35,7 +35,7 @@ app.post("/save", (req, res)=>{
         // 위치 저장
         if(data.p !== ""){
             connectionDB.query(
-                `INSERT INTO position (item, content) VALUES (${data.n}, ${data.p})`,
+                `INSERT INTO position (item, content, date) VALUES (${data.n}, ${data.p}, NOW())`,
                 (err, items)=>{console.log("위치저장완료", data.n)}
             );
         }
@@ -107,10 +107,10 @@ app.post("/search", (req, res)=>{
             let temp_result = [];
             const querySelector = ['n', 'c', 't', 'd', 'in'];
             for(let i=0; i<querySelector.length; i++){
-                temp_result = connectionDB.query(`SELECT n FROM item WHERE ${querySelector[i]} LIKE %${query}%`)
+                temp_result = connectionDB.query(`SELECT n FROM item WHERE ${querySelector[i]} LIKE '%${query}%'`)
                 if(temp_result.length !== 0) result.concat(temp_result)
             }
-            temp_result = connectionDB.query(`SELECT item FROM position WHERE content LIKE %${query}%`)
+            temp_result = connectionDB.query(`SELECT item FROM position WHERE content LIKE '%${query}%'`)
             if(temp_result.length !== 0) result.concat(temp_result)
         }
         console.log("내용검색", query, result.length)
@@ -149,35 +149,36 @@ app.post("/del", (req, res)=>{
     })
 })
 
-/* 이 이후에 대한 기능들은 테스트는 물론 제대로 완성되지 않은 기능들입니다. ***************************************************/
 // 아이템 과거위치값 조회
 app.post("locate", (req, res)=>{
     let body = ""
     req.on("data", (data) => {body += data})
     req.on("end", () => {
+        let query = qs.unescape(body).split(",");
 
-        function lastlocate(name){
-            // return db.get("position").filter({n:name}).value()[0];
-        }
+        // 이름 정확도 조사 추가
 
-        body = qs.unescape(body)
-        // message 
-        if(body.indexOf(',')===-1){ //생략이 되었을 경우
-            // 가장 최근 위치값 불러오기
-            lastlocate(body);
+        if(query.length===2 && (query[1].trim()==="" || isNaN(Number(query[1])))){
+            // 적절한 스택신호가 존재할 경우
+            // 해당 스택신호의 위치값을 불러오기
+            connectionDB.query(
+                `SELECT content FROM position WHERE item=${query[0]} ORDER BY date DESC LIMIT ${query[1]}, ${query[1]+1}`,
+                (err, items)=>{
+                    console.log("위치변경저장완료")
+                    res.status(200).send(`${query[0]},${items[0].content}`);
+                }
+            );
         }
         else{
-            const query = qs.unescape(body).split(',');
-            if(query[1].trim()==="" || isNaN(Number(query[1]))){ //숫자 이외의 값이 생략이 되었을 경우
-                // 가장 최근 위치값 불러오기
-                lastlocate(body);
-            }
-            else{ //숫자일 경우
-                // 해당 숫자의 위치값 불러오기,숫자에 해당하는 위치값이 없을 경우 최근 위치값
-                // db.get("position").filter({n:query[0]}).value()[query[1]]
-            }
+            // 가장 최근 위치값을 불러오기
+            connectionDB.query(
+                `SELECT content FROM position WHERE item=${query[0]} ORDER BY date DESC LIMIT 1`,
+                (err, items)=>{
+                    console.log("위치변경저장완료")
+                    res.status(200).send(`${query[0]},${items[0].content}`);
+                }
+            );
         }
-        res.status(200).send()
     })
 })
 
@@ -191,6 +192,17 @@ app.post("savelocate", (req, res)=>{
         // 이름에 해당하는 위치리스트
         // 그 중에 스택신호에 해당하는 인덱스에 위치값 설정
         // 그 후 //res.status(200).send()
+        const query = qs.unescape(body).split(",");
+        const limitNum = 0;
+        if(query.length === 3) limitNum = Number(query[2]); //스택신호가 생략되지 않은 경우
+
+        connectionDB.query(
+            `UPDATE position SET content=${query[1]} WHERE item=${query[0]} ORDER BY date DESC LIMIT ${limitNum}, ${limitNum+1}`,
+            (err, items)=>{
+                console.log("위치변경저장완료")
+                res.status(200).send();
+            }
+        );
     })
 })
 
