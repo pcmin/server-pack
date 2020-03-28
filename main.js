@@ -30,23 +30,39 @@ app.post("/save", (req, res)=>{
     req.on("data", (data) => {body += data})
     req.on("end", () => {
         const data = qs.parse(body)
-        console.log("저장요청", data.n)
+        console.log("저장요청", data.n, data)
+        // 생략된 값 전처리
+        if(data.t === "") data.t = 0;
+        if(data.c === "") data.c = data.t;
 
         // 위치 저장
         if(data.p !== ""){
             connectionDB.query(
-                `INSERT INTO position (item, content, date) VALUES (${data.n}, ${data.p}, NOW())`,
-                (err, items)=>{console.log("위치저장완료", data.n)}
+                "INSERT INTO `position` (??, ??, ??) VALUES (?, ?, NOW())",
+                ['item', 'content', 'date', data.n, data.p],
+                (err, items)=>{
+                    if(err) throw err;
+                    console.log("위치저장완료", data.n)
+                }
             );
         }
+        delete data.p;
+
+        // 이미지파일 저장 /*** 이미지 미디어 브랜치에서 추가 ***/
+        delete data.i
 
         // 아이템 저장
-        connectionDB.query(`SELECT n FROM item WHERE n=${data.n}`, (err, items)=>{
+        connectionDB.query("SELECT ?? FROM item WHERE ??=?",
+        ['n', 'n', data.n],
+        (err, items)=>{
+            if(err) throw err;
             if(items.length === 0){
                 // 추가
                 connectionDB.query(
-                    `INSERT INTO item (n, c, t, d, in) VALUES (${data.n}, ${data.c}, ${data.t}, ${data.d}, ${data.in})`,
+                    "INSERT INTO item (??, ??, ??, ??, ??) VALUES (?, ?, ?, ?, ?)",
+                    ['n', 'c', 't', 'd', 'in', data.n, data.c, data.t, data.d, data.in],
                     (err, items)=>{
+                        if(err) throw err;
                         console.log("추가저장완료", data.n)
                         res.redirect("/")
                     }
@@ -54,15 +70,11 @@ app.post("/save", (req, res)=>{
             }
             else{
                 // 변경
-                let set_expr = "";
-                // 변경할 내용 쿼리문자열로 지정
-                for(i in data){
-                    if(i == 'n') continue;
-                    set_expr += `${i}=${data[i]},`
-                }
                 connectionDB.query(
-                    `UPDATE item SET ${set_expr} WHERE n=${items[0].n}`,
+                    "UPDATE item SET ? WHERE ??=?",
+                    [data, 'n', items[0].n],
                     (err, items)=>{
+                        if(err) throw err;
                         console.log("변경저장완료", data.n, data)
                         res.redirect("/")
                     }
@@ -80,9 +92,11 @@ app.post("/check", (req, res)=>{
         const name = qs.unescape(body)
 
         connectionDB.query(
-            `SELECT n FROM item WHERE n=${data.n}`,
+            "SELECT ?? FROM item WHERE ??=?",
+            ['n', 'n', name],
             (err, items)=>{
-                const result = items.length===0? '0': '1';
+                if(err) throw err;
+                const result = (items.length===0)? '0': '1';
                 console.log("중복조사", name, result)
                 res.status(200).send(result)
             }
@@ -95,39 +109,96 @@ app.post("/search", (req, res)=>{
     let body = ""
     req.on("data", (data) => {body += data})
     req.on("end", () => {
-        const query = qs.unescape(body)
+
+        // 아이템 형변환
+        async function makeItemForm(items){
+            const itemForm = function(query){ return new Promise((resolve, reject)=>{
+                connectionDB.query("SELECT * FROM item WHERE ??=?", ['n', query], (err, result)=>{
+                    if(err) reject(err);
+                    else resolve(result);
+                })
+            })};
+            
+            const positionForm = function(query){ return new Promise((resolve, reject)=>{
+                connectionDB.query("SELECT content FROM `position` WHERE ??=?", ['item', query], (err, result)=>{
+                    if(err) reject(err);
+                    else resolve(result);
+                })
+            })};
+
+            let resultBuf = [];
+            for(let i=0; i<items.length; i++){
+                const itemBuf = await itemForm(items[i]);
+                delete itemBuf[0].id;
+                const posBuf = [];
+                (await positionForm(items[i])).forEach(element => {posBuf.push(element.content)});
+                // console.log(itemBuf[0], qs.escape(posBuf)); //변경된 내용 확인
+                resultBuf.push(qs.stringify(itemBuf[0])+"&p="+qs.escape(posBuf));
+            }
+            res.status(200).send(String(resultBuf))
+        }
+
         let result = [];
+        const query = qs.unescape(body);
 
         // 전체검색인 경우
         if(query === ""){
-            result = connectionDB.query(`SELECT * FROM item`)
+            connectionDB.query("SELECT ?? FROM item",
+            ['n'],
+            (err, rawItems)=>{
+                if(err) throw err;
+                let items = [];
+                rawItems.forEach(element=>{items.push(element.n)})
+                console.log("내용검색", query, items.length)
+                makeItemForm(items);
+            })
         }
         // 쿼리값을 포함하는 경우
         else{
-            let temp_result = [];
-            const querySelector = ['n', 'c', 't', 'd', 'in'];
-            for(let i=0; i<querySelector.length; i++){
-                temp_result = connectionDB.query(`SELECT n FROM item WHERE ${querySelector[i]} LIKE '%${query}%'`)
-                if(temp_result.length !== 0) result.concat(temp_result)
-            }
-            temp_result = connectionDB.query(`SELECT item FROM position WHERE content LIKE '%${query}%'`)
-            if(temp_result.length !== 0) result.concat(temp_result)
+            const querySelector = ['n', 'item', 'n', `%${query}%`];
+
+            const asyncQuery = function(){ return new Promise((resolve, reject)=>{
+                connectionDB.query("SELECT ?? FROM ?? WHERE ?? LIKE ?", querySelector, (err, result)=>{
+                    if(err) reject(err);
+                    else resolve(result);
+                })
+            })};
+            
+            asyncQuery() // ['n', 'item', 'n', `%${query}%`]
+            .then((item)=>{
+                item.forEach(element => {result.push(element.n)});
+                querySelector[2] = 'c';
+                return asyncQuery(); // ['n', 'item', 'c', `%${query}%`]
+            })
+            .then((item)=>{
+                item.forEach(element => {result.push(element.n)});
+                querySelector[2] = 't';
+                return asyncQuery(); // ['n', 'item', 't', `%${query}%`]
+            })
+            .then((item)=>{
+                item.forEach(element => {result.push(element.n)});
+                querySelector[2] = 'd';
+                return asyncQuery(); // ['n', 'item', 'd', `%${query}%`]
+            })
+            .then((item)=>{
+                item.forEach(element => {result.push(element.n)});
+                querySelector[2] = 'in';
+                return asyncQuery(); // ['n', 'item', 'in', `%${query}%`]
+            })
+            .then((item)=>{
+                item.forEach(element => {result.push(element.n)});
+                querySelector[0] = 'item';
+                querySelector[1] = 'position';
+                querySelector[2] = 'content';
+                return asyncQuery(); // ['item', 'position', 'content', `%${query}%`]
+            })
+            .then((item)=>{
+                item.forEach(element => {result.push(element.item)});
+                console.log("내용검색", query, result.length)
+                makeItemForm(items);
+            })
+            .catch(e => {throw e;});
         }
-        console.log("내용검색", query, result.length)
-
-        // 아이템 형변환
-        let resultBuf = [];
-        let itemBuf = [];
-        let posBuf = [];
-        for(let i=0; i<result.length; i++){
-
-            itemBuf = connectionDB.query(`SELECT * FROM item WHERE n=${result[i]}`)
-            posBuf = connectionDB.query(`SELECT content FROM position WHERE content=${result[i]}`)
-
-            resultBuf.push(qs.stringify(itemBuf)+"&p="+qs.stringify(posBuf))
-        }
-
-        res.status(200).send(String(resultBuf))
     })
 })
 
@@ -140,8 +211,10 @@ app.post("/del", (req, res)=>{
         console.log("삭제요청", query)
 
         connectionDB.query(
-            `DELETE item WHERE n=${query}`,
+            "DELETE FROM item WHERE ??=?",
+            ['n', query],
             (err, items)=>{
+                if(err) throw err;
                 console.log("삭제완료", query)
                 res.status(200).send();
             }
