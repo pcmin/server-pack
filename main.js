@@ -147,10 +147,9 @@ app.post("/search", (req, res)=>{
             ['n'],
             (err, rawItems)=>{
                 if(err) throw err;
-                let items = [];
-                rawItems.forEach(element=>{items.push(element.n)})
-                console.log("내용검색", query, items.length)
-                makeItemForm(items);
+                rawItems.forEach(element=>{result.push(element.n)})
+                console.log("내용검색", query, result.length)
+                makeItemForm(result);
             })
         }
         // 쿼리값을 포함하는 경우
@@ -195,7 +194,7 @@ app.post("/search", (req, res)=>{
             .then((item)=>{
                 item.forEach(element => {result.push(element.item)});
                 console.log("내용검색", query, result.length)
-                makeItemForm(items);
+                makeItemForm(result);
             })
             .catch(e => {throw e;});
         }
