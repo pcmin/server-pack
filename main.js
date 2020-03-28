@@ -229,86 +229,133 @@ app.post("/del", (req, res)=>{
 
 // 아이템 과거위치값 조회
 app.post("/locate", (req, res)=>{
+    const AllItemName = function(){ return new Promise((resolve, reject)=>{
+        connectionDB.query("SELECT ?? FROM item", ['n'], (err, result)=>{
+            if(err) reject(err);
+            else resolve(result);
+        })
+    })};
+
     let body = ""
     req.on("data", (data) => {body += data})
-    req.on("end", () => {
-        let query = qs.unescape(body).split(",");
+    req.on("end", async () => {
         let queryName = "";
         let queryStack = 0;
+        let query = qs.unescape(body).split(",");
         /** query::
-         * length == 2
+         * <length == 2>
          * query[0], query[1] == (이름, 스택신호)
          *   해당 이름의 위치값중 해당 스택신호
          * 
-         * length == 1
-         * query[0] == (스택신호)
+         *   - 내부인자 이름을 해당 이름으로 설정
+         *   - 내부인자 스택신호를 초기화
+         * 
+         * <length == 1>
+         * 1. query[0] == (스택신호)
          *   내부인자의 이름의 위치값중 해당 스택신호
          * 
-         * query[0] == (이름)
-         *   1. 내부인자의 이름과 같은 경우
-         *     해당 이름의 위치값중 내부인자의 스택신호
-         *     내부인자 스택신호를 +1 증가
-         *   2. 내부인자의 이름과 다를 경우
-         *     해당 이름의 위치값중 최근위치값
-         *     내부인자 이름을 해당 이름으로 설정
-         *     내부인자 스택신호를 초기화
+         *   - 내부인자 이름은 유지
+         *   - 내부인자 스택신호는 유지
          * 
-         * length == 0
+         * 2. query[0] == (이름)
+         *   2.1. 내부인자의 이름과 같은 경우
+         *     해당 이름의 위치값중 내부인자의 스택신호
+         * 
+         *     - 내부인자 이름은 유지
+         *     - 내부인자 스택신호를 +1 증가
+         * 
+         *   2.2. 내부인자의 이름과 다를 경우
+         *     해당 이름의 위치값중 최근위치값
+         * 
+         *     - 내부인자 이름을 해당 이름으로 설정
+         *     - 내부인자 스택신호를 초기화
+         * 
+         * 3. query[0] == ""
          *   내부인자의 이름의 위치값중 내부인자의 스택신호
+         * 
+         *   - 내부인자 이름은 유지
+         *   - 내부인자 스택신호를 +1 증가
          */
-        // 쿼리인자 전처리 설정
-        console.log(0, query);
-        if(query.length === 2){
-            // query[0] 이름 정확도 조사 추가
 
-            queryName = query[0];
-            queryStack = query[1];
-        }
-        else if(query.length === 1){
-            if(query[0] === ""){ // 아무인자도 없을 경우
-                if(historySearch.name === null){
-                    throw new Error("there is no search item before");
+        // 이름이 정확한지 판단
+        if(!(query.length == 1 && (query[0]==="" || /^\d+$/.test(query[0].trim())))){
+            // 이름 정확도 조사
+            const name = query[0];
+            const lcs = require('./src/LCS.js');
+            const items = await AllItemName();
+        
+            let MaxName = "";
+            let MaxVal = 0.5;
+            for (let i=0; i<items.length; i++) {
+                let itemName = items[i].n;
+                let common = lcs(name.split(""), itemName.split(""));
+        
+                if(common.length/itemName.length >= MaxVal){
+                    MaxName = itemName;
+                    MaxVal = common.length/itemName.length;
                 }
-                queryName = historySearch.name;
-                queryStack = historySearch.stack;
             }
-            else if(query[0]){ // 인자가 정수인 경우, 스택신호만 온 경우
+            if(MaxName === "") throw new Error("There is no match item name with "+name)
+            queryName = MaxName;
+        }
 
-                // query[1].trim()==="" || isNaN(Number(query[1]))
-
-                
-                if(historySearch.name === null){
-                    throw new Error("there is no search item before");
-                }
+        // 쿼리와 내부인자 상호작용 설정
+        if(query.length === 2 && /^\d+$/.test(query[1].trim())){
+            queryStack = Number(query[1]);
+            // - 내부인자 이름은 해당이름
+            // - 내부인자 스택신호를 초기화
+            historySearch.name = queryName;
+            historySearch.stack = 0;
+        }
+        else{
+            if(query[0] === ""){ // 아무인자도 없을 경우
+                if(historySearch.name === null) throw new Error("there is no search item before");
+                // - 내부인자 이름은 유지
+                // - 내부인자 스택신호를 +1 증가
                 queryName = historySearch.name;
-                queryStack = query[0];
+                queryStack = historySearch.stack++;
+            }
+            else if(/^\d+$/.test(query[0].trim())){ // 인자가 정수인 경우, 스택신호만 온 경우
+                if(historySearch.name === null) throw new Error("there is no search item before");
+                queryName = historySearch.name;
+                queryStack = Number(query[0]);
+                // - 내부인자 이름은 유지
+                // - 내부인자 스택신호는 유지
             }
             else{ // 일반문자열, 이름으로 취급
-                // query[0] 이름 정확도 조사 추가
-
-                if(query[0] === queryName){
-                    queryName = query[0];
-                    queryStack = historySearch.stack;
+                if(queryName === historySearch.name){
+                    queryStack = ++historySearch.stack;
+                    // - 내부인자 이름은 유지
+                    // - 내부인자 스택신호를 +1 증가
                 }
                 else{
-                    queryName = query[0];
                     queryStack = historySearch.stack;
+                    // - 내부인자 이름은 해당이름
+                    // - 내부인자 스택신호를 초기화
+                    historySearch.name = queryName;
+                    historySearch.stack = 0;
                 }
             }
         }
 
-        
         // 해당 스택신호의 위치값을 불러오기
         connectionDB.query(
             "SELECT `content` FROM `position` WHERE ??=? ORDER BY `date` DESC LIMIT ?, 1",
             ['item', queryName, queryStack],
             (err, items)=>{
-                console.log("위치조회", query, items);
-                res.status(200).send(`${query[0]},${items[0].content}`);
+                if(err) throw err;
+                if(items.length === 0){
+                    console.log("존재하지않는 위치조회", query);
+                    res.status(200).send(`${queryName},`);
+                }
+                else{
+                    console.log("위치조회", query, items[0].content);
+                    res.status(200).send(`${queryName},${items[0].content}`);
+                }
             }
         );
     })
-})
+});
 
 // 아이템 위치값 변경
 app.post("/savelocate", (req, res)=>{
