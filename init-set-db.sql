@@ -13,7 +13,9 @@ CREATE TABLE `item`(
 );
 
 CREATE TABLE `position`(
+    `id` INT(11) NOT NULL AUTO_INCREMENT,
     `item` TEXT NOT NULL,
     `content` TEXT,
-    `date` DATETIME
+    `date` DATETIME,
+    PRIMARY KEY (`id`)
 );

@@ -14,9 +14,15 @@ function errorExec(err){
     throw err;
 }
 
+// 위치값 히스토리 내부 탐색인자
+let historySearch = {
+    name : null,
+    stack : 0
+}
+
 // 홈페이지
 app.get("/", (req, res)=>{
-    const homeTemplate = fs.readFileSync("index.html", "utf-8")
+    const homeTemplate = fs.readFileSync("db-test.html", "utf-8") //임시
     res.status(200)
         .type('text/html')
         .send(homeTemplate)
@@ -222,56 +228,115 @@ app.post("/del", (req, res)=>{
 })
 
 // 아이템 과거위치값 조회
-app.post("locate", (req, res)=>{
+app.post("/locate", (req, res)=>{
     let body = ""
     req.on("data", (data) => {body += data})
     req.on("end", () => {
         let query = qs.unescape(body).split(",");
+        let queryName = "";
+        let queryStack = 0;
+        /** query::
+         * length == 2
+         * query[0], query[1] == (이름, 스택신호)
+         *   해당 이름의 위치값중 해당 스택신호
+         * 
+         * length == 1
+         * query[0] == (스택신호)
+         *   내부인자의 이름의 위치값중 해당 스택신호
+         * 
+         * query[0] == (이름)
+         *   1. 내부인자의 이름과 같은 경우
+         *     해당 이름의 위치값중 내부인자의 스택신호
+         *     내부인자 스택신호를 +1 증가
+         *   2. 내부인자의 이름과 다를 경우
+         *     해당 이름의 위치값중 최근위치값
+         *     내부인자 이름을 해당 이름으로 설정
+         *     내부인자 스택신호를 초기화
+         * 
+         * length == 0
+         *   내부인자의 이름의 위치값중 내부인자의 스택신호
+         */
+        // 쿼리인자 전처리 설정
+        console.log(0, query);
+        if(query.length === 2){
+            // query[0] 이름 정확도 조사 추가
 
-        // 이름 정확도 조사 추가
+            queryName = query[0];
+            queryStack = query[1];
+        }
+        else if(query.length === 1){
+            if(query[0] === ""){ // 아무인자도 없을 경우
+                if(historySearch.name === null){
+                    throw new Error("there is no search item before");
+                }
+                queryName = historySearch.name;
+                queryStack = historySearch.stack;
+            }
+            else if(query[0]){ // 인자가 정수인 경우, 스택신호만 온 경우
 
-        if(query.length===2 && (query[1].trim()==="" || isNaN(Number(query[1])))){
-            // 적절한 스택신호가 존재할 경우
-            // 해당 스택신호의 위치값을 불러오기
-            connectionDB.query(
-                `SELECT content FROM position WHERE item=${query[0]} ORDER BY date DESC LIMIT ${query[1]}, ${query[1]+1}`,
-                (err, items)=>{
-                    console.log("위치변경저장완료")
-                    res.status(200).send(`${query[0]},${items[0].content}`);
+                // query[1].trim()==="" || isNaN(Number(query[1]))
+
+                
+                if(historySearch.name === null){
+                    throw new Error("there is no search item before");
                 }
-            );
-        }
-        else{
-            // 가장 최근 위치값을 불러오기
-            connectionDB.query(
-                `SELECT content FROM position WHERE item=${query[0]} ORDER BY date DESC LIMIT 1`,
-                (err, items)=>{
-                    console.log("위치변경저장완료")
-                    res.status(200).send(`${query[0]},${items[0].content}`);
+                queryName = historySearch.name;
+                queryStack = query[0];
+            }
+            else{ // 일반문자열, 이름으로 취급
+                // query[0] 이름 정확도 조사 추가
+
+                if(query[0] === queryName){
+                    queryName = query[0];
+                    queryStack = historySearch.stack;
                 }
-            );
+                else{
+                    queryName = query[0];
+                    queryStack = historySearch.stack;
+                }
+            }
         }
+
+        
+        // 해당 스택신호의 위치값을 불러오기
+        connectionDB.query(
+            "SELECT `content` FROM `position` WHERE ??=? ORDER BY `date` DESC LIMIT ?, 1",
+            ['item', queryName, queryStack],
+            (err, items)=>{
+                console.log("위치조회", query, items);
+                res.status(200).send(`${query[0]},${items[0].content}`);
+            }
+        );
     })
 })
 
 // 아이템 위치값 변경
-app.post("savelocate", (req, res)=>{
+app.post("/savelocate", (req, res)=>{
     let body = ""
     req.on("data", (data) => {body += data})
     req.on("end", () => {
-        // body = 이름, 위치값[위치이름,alpha,beta,gamma], 스택신호
-
-        // 이름에 해당하는 위치리스트
-        // 그 중에 스택신호에 해당하는 인덱스에 위치값 설정
-        // 그 후 //res.status(200).send()
         const query = qs.unescape(body).split(",");
-        const limitNum = 0;
-        if(query.length === 3) limitNum = Number(query[2]); //스택신호가 생략되지 않은 경우
+        /** query::
+         * length == 3
+         * query[0], query[1], query[2]  == (이름, 위치값, 스택신호)
+         *   해당 이름의 해당 스택신호의 내용을 해당 위치값으로 변경
+         * 
+         * length == 2
+         * query[0], query[1]  == (이름, 위치값)
+         *   해당 이름의 가장 최근 내용을 해당 위치값으로 변경
+         */
+        
+        // 이름 정확도 조사 추가
+
+        let limitNum = 0;
+        if(query.length === 3) limitNum = isNaN(Number(query[2]))? 0: Number(query[2]); //스택신호가 생략되지 않은 경우
 
         connectionDB.query(
-            `UPDATE position SET content=${query[1]} WHERE item=${query[0]} ORDER BY date DESC LIMIT ${limitNum}, ${limitNum+1}`,
+            "UPDATE `position` AS r, (SELECT * FROM `position` WHERE `item`=? ORDER BY `date` DESC LIMIT ?,1) t SET r.content=? WHERE r.id = t.id",
+            [query[0], limitNum, query[1]],
             (err, items)=>{
-                console.log("위치변경저장완료")
+                if(err) throw err;
+                console.log("위치변경저장완료", itmes)
                 res.status(200).send();
             }
         );
