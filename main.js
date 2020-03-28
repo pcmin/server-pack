@@ -1,6 +1,9 @@
 const fs = require("fs");
 const qs = require("querystring");
 const express = require("express");
+const mysql = require('mysql');
+const dbconfig = require('./config/DB.js');
+const connectionDB = mysql.createConnection(dbconfig);
 const app = express();
 
 const port = 3000;
@@ -11,17 +14,15 @@ function errorExec(err){
     throw err;
 }
 
-// lowdb를 file-async로 처리
-// ASYNC >> https://github.com/typicode/lowdb/tree/master/examples
-// API   >> https://github.com/typicode/lowdb
-const low = require("lowdb")
-const FileASync = require("lowdb/adapters/FileASync")
-if(!fs.existsSync("data")) fs.mkdirSync("data")
-low(new FileASync("data/db.json")).then(db => {
+// 위치값 히스토리 내부 탐색인자
+let historySearch = {
+    name : null,
+    stack : 0
+}
 
 // 홈페이지
 app.get("/", (req, res)=>{
-    const homeTemplate = fs.readFileSync("index.html", "utf-8")
+    const homeTemplate = fs.readFileSync("db-test.html", "utf-8") //임시
     res.status(200)
         .type('text/html')
         .send(homeTemplate)
@@ -35,38 +36,57 @@ app.post("/save", (req, res)=>{
     req.on("data", (data) => {body += data})
     req.on("end", () => {
         const data = qs.parse(body)
-        console.log("저장요청", data.n)
+        console.log("저장요청", data.n, data)
+        // 생략된 값 전처리
+        if(data.t === "") data.t = 0;
+        if(data.c === "") data.c = data.t;
 
-        const positionVal = data.p
-        delete data.p //위치값 분리
-        if(positionVal !== ""){ //빈 위치값이 아닐 경우 저장
-            db.get("position")
-              .push({
-                  id: data.n,
-                  p: positionVal
-              })
-              .write()
+        // 위치 저장
+        if(data.p !== ""){
+            connectionDB.query(
+                "INSERT INTO `position` (??, ??, ??) VALUES (?, ?, NOW())",
+                ['item', 'content', 'date', data.n, data.p],
+                (err, items)=>{
+                    if(err) throw err;
+                    console.log("위치저장완료", data.n)
+                }
+            );
         }
+        delete data.p;
 
-        if(db.get("items").filter({n:data.n}).value().length===0){
-            // 추가
-            db.get("items")
-              .push(data)
-              .write()
-              .then(() => {console.log("추가저장완료", data.n)})
-            db.update('count', n => n + 1)
-              .write() // 총 개수 변경
-            res.redirect("/")
-        }
-        else{
-            // 변경
-            db.get("items")
-              .find({n: data.n})
-              .assign(data)
-              .write()
-              .then(() => {console.log("변경저장완료", data.n, data)})
-            res.redirect("/")
-        }
+        // 이미지파일 저장 /*** 이미지 미디어 브랜치에서 추가 ***/
+        delete data.i
+
+        // 아이템 저장
+        connectionDB.query("SELECT ?? FROM item WHERE ??=?",
+        ['n', 'n', data.n],
+        (err, items)=>{
+            if(err) throw err;
+            if(items.length === 0){
+                // 추가
+                connectionDB.query(
+                    "INSERT INTO item (??, ??, ??, ??, ??) VALUES (?, ?, ?, ?, ?)",
+                    ['n', 'c', 't', 'd', 'in', data.n, data.c, data.t, data.d, data.in],
+                    (err, items)=>{
+                        if(err) throw err;
+                        console.log("추가저장완료", data.n)
+                        res.redirect("/")
+                    }
+                );
+            }
+            else{
+                // 변경
+                connectionDB.query(
+                    "UPDATE item SET ? WHERE ??=?",
+                    [data, 'n', items[0].n],
+                    (err, items)=>{
+                        if(err) throw err;
+                        console.log("변경저장완료", data.n, data)
+                        res.redirect("/")
+                    }
+                );
+            }
+        })
     })
 })
 
@@ -77,9 +97,16 @@ app.post("/check", (req, res)=>{
     req.on("end", () => {
         const name = qs.unescape(body)
 
-        const result = db.get("items").filter({n:name}).value().length===0?'0':'1'
-        console.log("중복조사", name, result)
-        res.status(200).send(result)
+        connectionDB.query(
+            "SELECT ?? FROM item WHERE ??=?",
+            ['n', 'n', name],
+            (err, items)=>{
+                if(err) throw err;
+                const result = (items.length===0)? '0': '1';
+                console.log("중복조사", name, result)
+                res.status(200).send(result)
+            }
+        );
     })
 })
 
@@ -88,44 +115,95 @@ app.post("/search", (req, res)=>{
     let body = ""
     req.on("data", (data) => {body += data})
     req.on("end", () => {
-        const query = qs.unescape(body)
 
-        let result = null;
+        // 아이템 형변환
+        async function makeItemForm(items){
+            const itemForm = function(query){ return new Promise((resolve, reject)=>{
+                connectionDB.query("SELECT * FROM item WHERE ??=?", ['n', query], (err, result)=>{
+                    if(err) reject(err);
+                    else resolve(result);
+                })
+            })};
+            
+            const positionForm = function(query){ return new Promise((resolve, reject)=>{
+                connectionDB.query("SELECT content FROM `position` WHERE ??=?", ['item', query], (err, result)=>{
+                    if(err) reject(err);
+                    else resolve(result);
+                })
+            })};
+
+            let resultBuf = [];
+            for(let i=0; i<items.length; i++){
+                const itemBuf = await itemForm(items[i]);
+                delete itemBuf[0].id;
+                const posBuf = [];
+                (await positionForm(items[i])).forEach(element => {posBuf.push(element.content)});
+                // console.log(itemBuf[0], qs.escape(posBuf)); //변경된 내용 확인
+                resultBuf.push(qs.stringify(itemBuf[0])+"&p="+qs.escape(posBuf));
+            }
+            res.status(200).send(String(resultBuf))
+        }
+
+        let result = [];
+        const query = qs.unescape(body);
+
         // 전체검색인 경우
         if(query === ""){
-            result = db.get("items").value()
+            connectionDB.query("SELECT ?? FROM item",
+            ['n'],
+            (err, rawItems)=>{
+                if(err) throw err;
+                rawItems.forEach(element=>{result.push(element.n)})
+                console.log("내용검색", query, result.length)
+                makeItemForm(result);
+            })
         }
-        // 쿼리값 포함하는 경우, 위치에 대한 조사제외
+        // 쿼리값을 포함하는 경우
         else{
-            result = db.get("items")
-                .filter((item) => {
-                    if( item.n.indexOf(query)!==-1 ||
-                        item.c.indexOf(query)!==-1 ||
-                        item.t.indexOf(query)!==-1 ||
-                        item.d.indexOf(query)!==-1 ||
-                        item.in.indexOf(query)!==-1 ) return true;
-                    return false;
-                })
-                .value()
-        }
-        console.log("내용검색", query, result.length)
-        // 쿼리배열형태로 변환
-        const len = result.length;
-        let resultBuf = [];
-        for(let i=0; i<len; i++){
-            // 위치리스트 반환
-            const positionResult = db.get("position")
-                            .filter({n:result[i].n})
-                            .value()
-            let posBuf = [];
-            for (i in positionResult){
-                posBuf.push(positionResult[i].p);
-            }
-            
-            resultBuf.push(qs.stringify(result[i])+"&p="+qs.stringify(posBuf))
-        }
+            const querySelector = ['n', 'item', 'n', `%${query}%`];
 
-        res.status(200).send(String(resultBuf))
+            const asyncQuery = function(){ return new Promise((resolve, reject)=>{
+                connectionDB.query("SELECT ?? FROM ?? WHERE ?? LIKE ?", querySelector, (err, result)=>{
+                    if(err) reject(err);
+                    else resolve(result);
+                })
+            })};
+            
+            asyncQuery() // ['n', 'item', 'n', `%${query}%`]
+            .then((item)=>{
+                item.forEach(element => {result.push(element.n)});
+                querySelector[2] = 'c';
+                return asyncQuery(); // ['n', 'item', 'c', `%${query}%`]
+            })
+            .then((item)=>{
+                item.forEach(element => {result.push(element.n)});
+                querySelector[2] = 't';
+                return asyncQuery(); // ['n', 'item', 't', `%${query}%`]
+            })
+            .then((item)=>{
+                item.forEach(element => {result.push(element.n)});
+                querySelector[2] = 'd';
+                return asyncQuery(); // ['n', 'item', 'd', `%${query}%`]
+            })
+            .then((item)=>{
+                item.forEach(element => {result.push(element.n)});
+                querySelector[2] = 'in';
+                return asyncQuery(); // ['n', 'item', 'in', `%${query}%`]
+            })
+            .then((item)=>{
+                item.forEach(element => {result.push(element.n)});
+                querySelector[0] = 'item';
+                querySelector[1] = 'position';
+                querySelector[2] = 'content';
+                return asyncQuery(); // ['item', 'position', 'content', `%${query}%`]
+            })
+            .then((item)=>{
+                item.forEach(element => {result.push(element.item)});
+                console.log("내용검색", query, result.length)
+                makeItemForm(result);
+            })
+            .catch(e => {throw e;});
+        }
     })
 })
 
@@ -137,70 +215,136 @@ app.post("/del", (req, res)=>{
         const query = qs.unescape(body)
         console.log("삭제요청", query)
 
-        // 위치값은 따로 삭제하지 않고 자주 보관되는 장소에 대한 정보로 축적
-        db.get("items")
-          .remove({n: query})
-          .write()
-          .then(() => {console.log("삭제완료", query)})
-        db.update('count', n => n - 1)
-          .write() // 총 개수 변경
-        res.status(200).send()
+        connectionDB.query(
+            "DELETE FROM item WHERE ??=?",
+            ['n', query],
+            (err, items)=>{
+                if(err) throw err;
+                console.log("삭제완료", query)
+                res.status(200).send();
+            }
+        );
     })
 })
 
-/* 이 이후에 대한 기능들은 테스트는 물론 제대로 완성되지 않은 기능들입니다. ***************************************************/
 // 아이템 과거위치값 조회
-app.post("locate", (req, res)=>{
+app.post("/locate", (req, res)=>{
     let body = ""
     req.on("data", (data) => {body += data})
     req.on("end", () => {
+        let query = qs.unescape(body).split(",");
+        let queryName = "";
+        let queryStack = 0;
+        /** query::
+         * length == 2
+         * query[0], query[1] == (이름, 스택신호)
+         *   해당 이름의 위치값중 해당 스택신호
+         * 
+         * length == 1
+         * query[0] == (스택신호)
+         *   내부인자의 이름의 위치값중 해당 스택신호
+         * 
+         * query[0] == (이름)
+         *   1. 내부인자의 이름과 같은 경우
+         *     해당 이름의 위치값중 내부인자의 스택신호
+         *     내부인자 스택신호를 +1 증가
+         *   2. 내부인자의 이름과 다를 경우
+         *     해당 이름의 위치값중 최근위치값
+         *     내부인자 이름을 해당 이름으로 설정
+         *     내부인자 스택신호를 초기화
+         * 
+         * length == 0
+         *   내부인자의 이름의 위치값중 내부인자의 스택신호
+         */
+        // 쿼리인자 전처리 설정
+        console.log(0, query);
+        if(query.length === 2){
+            // query[0] 이름 정확도 조사 추가
 
-        function lastlocate(name){
-            return db.get("position").filter({n:name}).value()[0];
+            queryName = query[0];
+            queryStack = query[1];
+        }
+        else if(query.length === 1){
+            if(query[0] === ""){ // 아무인자도 없을 경우
+                if(historySearch.name === null){
+                    throw new Error("there is no search item before");
+                }
+                queryName = historySearch.name;
+                queryStack = historySearch.stack;
+            }
+            else if(query[0]){ // 인자가 정수인 경우, 스택신호만 온 경우
+
+                // query[1].trim()==="" || isNaN(Number(query[1]))
+
+                
+                if(historySearch.name === null){
+                    throw new Error("there is no search item before");
+                }
+                queryName = historySearch.name;
+                queryStack = query[0];
+            }
+            else{ // 일반문자열, 이름으로 취급
+                // query[0] 이름 정확도 조사 추가
+
+                if(query[0] === queryName){
+                    queryName = query[0];
+                    queryStack = historySearch.stack;
+                }
+                else{
+                    queryName = query[0];
+                    queryStack = historySearch.stack;
+                }
+            }
         }
 
-        body = qs.unescape(body)
-        // message 
-        if(body.indexOf(',')===-1){ //생략이 되었을 경우
-            // 가장 최근 위치값 불러오기
-            lastlocate(body);
-        }
-        else{
-            const query = qs.unescape(body).split(',');
-            if(query[1].trim()==="" || isNaN(Number(query[1]))){ //숫자 이외의 값이 생략이 되었을 경우
-                // 가장 최근 위치값 불러오기
-                lastlocate(body);
+        
+        // 해당 스택신호의 위치값을 불러오기
+        connectionDB.query(
+            "SELECT `content` FROM `position` WHERE ??=? ORDER BY `date` DESC LIMIT ?, 1",
+            ['item', queryName, queryStack],
+            (err, items)=>{
+                console.log("위치조회", query, items);
+                res.status(200).send(`${query[0]},${items[0].content}`);
             }
-            else{ //숫자일 경우
-                // 해당 숫자의 위치값 불러오기,숫자에 해당하는 위치값이 없을 경우 최근 위치값
-                db.get("position").filter({n:query[0]}).value()[query[1]]
-            }
-        }
-        res.status(200).send()
+        );
     })
 })
 
 // 아이템 위치값 변경
-app.post("savelocate", (req, res)=>{
+app.post("/savelocate", (req, res)=>{
     let body = ""
     req.on("data", (data) => {body += data})
     req.on("end", () => {
-        // body = 이름, 위치값[위치이름,alpha,beta,gamma], 스택신호
+        const query = qs.unescape(body).split(",");
+        /** query::
+         * length == 3
+         * query[0], query[1], query[2]  == (이름, 위치값, 스택신호)
+         *   해당 이름의 해당 스택신호의 내용을 해당 위치값으로 변경
+         * 
+         * length == 2
+         * query[0], query[1]  == (이름, 위치값)
+         *   해당 이름의 가장 최근 내용을 해당 위치값으로 변경
+         */
+        
+        // 이름 정확도 조사 추가
 
-        // 이름에 해당하는 위치리스트
-        // 그 중에 스택신호에 해당하는 인덱스에 위치값 설정
-        // 그 후 //res.status(200).send()
+        let limitNum = 0;
+        if(query.length === 3) limitNum = isNaN(Number(query[2]))? 0: Number(query[2]); //스택신호가 생략되지 않은 경우
+
+        connectionDB.query(
+            "UPDATE `position` AS r, (SELECT * FROM `position` WHERE `item`=? ORDER BY `date` DESC LIMIT ?,1) t SET r.content=? WHERE r.id = t.id",
+            [query[0], limitNum, query[1]],
+            (err, items)=>{
+                if(err) throw err;
+                console.log("위치변경저장완료", itmes)
+                res.status(200).send();
+            }
+        );
     })
 })
 
 // 페이지 오류
 app.use((req, res, next)=>{res.status(404).send('Not Found')})
 
-// db 기본값 세팅
-return db.defaults({ items: [], count: 0, position: [] }).write()
-
-})
-.then(() => {
-    // 서버 해당port로 실행
-    app.listen(port, ()=>{console.log(`Web app listening on port ${port}!`)})
-})
+// 서버 해당port로 실행
+app.listen(port, ()=>{console.log(`Web app listening on port ${port}!`)})
