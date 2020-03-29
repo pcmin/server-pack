@@ -22,7 +22,7 @@ let historySearch = {
 
 // 홈페이지
 app.get("/", (req, res)=>{
-    const homeTemplate = fs.readFileSync("db-test.html", "utf-8") //임시
+    const homeTemplate = fs.readFileSync("index.html", "utf-8")
     res.status(200)
         .type('text/html')
         .send(homeTemplate)
@@ -227,15 +227,15 @@ app.post("/del", (req, res)=>{
     })
 })
 
+const AllItemName = function(){ return new Promise((resolve, reject)=>{
+    connectionDB.query("SELECT ?? FROM item", ['n'], (err, result)=>{
+        if(err) reject(err);
+        else resolve(result);
+    })
+})};
+
 // 아이템 과거위치값 조회
 app.post("/locate", (req, res)=>{
-    const AllItemName = function(){ return new Promise((resolve, reject)=>{
-        connectionDB.query("SELECT ?? FROM item", ['n'], (err, result)=>{
-            if(err) reject(err);
-            else resolve(result);
-        })
-    })};
-
     let body = ""
     req.on("data", (data) => {body += data})
     req.on("end", async () => {
@@ -329,7 +329,6 @@ app.post("/locate", (req, res)=>{
                     // - 내부인자 스택신호를 +1 증가
                 }
                 else{
-                    queryStack = historySearch.stack;
                     // - 내부인자 이름은 해당이름
                     // - 내부인자 스택신호를 초기화
                     historySearch.name = queryName;
@@ -361,7 +360,7 @@ app.post("/locate", (req, res)=>{
 app.post("/savelocate", (req, res)=>{
     let body = ""
     req.on("data", (data) => {body += data})
-    req.on("end", () => {
+    req.on("end", async () => {
         const query = qs.unescape(body).split(",");
         /** query::
          * length == 3
@@ -373,7 +372,24 @@ app.post("/savelocate", (req, res)=>{
          *   해당 이름의 가장 최근 내용을 해당 위치값으로 변경
          */
         
-        // 이름 정확도 조사 추가
+        // 이름 정확도 조사
+        const name = query[0];
+        const lcs = require('./src/LCS.js');
+        const items = await AllItemName();
+    
+        let MaxName = "";
+        let MaxVal = 0.5;
+        for (let i=0; i<items.length; i++) {
+            let itemName = items[i].n;
+            let common = lcs(name.split(""), itemName.split(""));
+    
+            if(common.length/itemName.length >= MaxVal){
+                MaxName = itemName;
+                MaxVal = common.length/itemName.length;
+            }
+        }
+        if(MaxName === "") throw new Error("There is no match item name with "+name)
+        query[0] = MaxName;
 
         let limitNum = 0;
         if(query.length === 3) limitNum = isNaN(Number(query[2]))? 0: Number(query[2]); //스택신호가 생략되지 않은 경우
@@ -383,7 +399,7 @@ app.post("/savelocate", (req, res)=>{
             [query[0], limitNum, query[1]],
             (err, items)=>{
                 if(err) throw err;
-                console.log("위치변경저장완료", itmes)
+                console.log("위치변경저장완료", query[0], limitNum, query[1])
                 res.status(200).send();
             }
         );
