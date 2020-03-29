@@ -64,7 +64,7 @@
         </div>
     </article>
 
-    <div id="overlay" style="display:none;"> <!-- display:flex을 임시적인 테스트 코드 입니다. -->
+    <div id="overlay">
         <div class="stat">
             <form action="/update" method="POST">
                 <div class="submitArea">
@@ -86,7 +86,7 @@
                     <input type="text" class="inputDetail" name="name" placeholder="이름(필수)" readonly>
                     <div class="label">위치</div>
                     <div class="equalContainer">
-                        <input type="button" id="positionListBtn" class="btn holdSize" onclick="historyToggle()" value="▼" data-state="0">
+                        <input type="button" id="positionListBtn" class="btn holdSize left" onclick="historyToggle()" value="▼" data-state="0">
                         <input type="text" class="inputDetail" name="position" placeholder="새로운 위치 추가">
                     </div>
                     <div id="positionHistory"></div>

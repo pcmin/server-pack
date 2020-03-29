@@ -1,7 +1,7 @@
 // 위치값 토큰 양식 반환함수
 function historyTemplate(data){
     return `<input type="text" class="inputPos" name="position" placeholder="위치값 없음" value="${data}">
-    <input type="button" class="btn holdSize update" value="✔" title="현 내용으로 변경" onclick="updateHistory(event)">`
+    <input type="button" class="btn holdSize right update" value="✔" title="현 내용으로 변경" onclick="updateHistory(event)">`
 }
 
 // 위치 내역으로 값 출력
