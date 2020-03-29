@@ -1,5 +1,6 @@
 data/*
 image/*
+config/*
 node_modules
-doc.test
+doc.temp
 *test*.*

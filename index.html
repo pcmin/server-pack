@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <link rel="stylesheet" href="src/style.css" type="text/css">
+    <script src="src/formControl.js"></script>
+    <script src="src/contentControl.js"></script>
+    <script src="src/imageUpload.js"></script>
+    <script src="src/history.js"></script>
+    <script src="src/token.js"></script>
 </head>
 <body class="stretchContainer">
     <header>
@@ -23,10 +28,10 @@
                         <input type="text" class="inputDetail" name="name" placeholder="이름(필수)" required>
                         <div class="label">위치</div>
                         <input type="text" class="inputDetail" name="position" placeholder="위치(GPS 태그 또는 글)">
-                        <div class="label">재고/수량</div>
-                        <input type="number" class="inputDetail" name="count" placeholder="재고/수량">
-                        <div class="label">대여여부</div>
-                        <input type="text" class="inputDetail" name="rental" placeholder="대여여부">
+                        <div class="label">현재 수량</div>
+                        <input type="number" class="inputDetail" name="count" placeholder="현재 수량">
+                        <div class="label">총 재고량</div>
+                        <input type="text" class="inputDetail" name="total" placeholder="총 재고량">
                         <div class="label">설명</div>
                         <textarea type="text" class="inputDetail" name="description" placeholder="물건에 대한 구체적인 설명을 입력해주세요"></textarea>
                     </div>
@@ -80,11 +85,16 @@
                     <div class="label">이름</div>
                     <input type="text" class="inputDetail" name="name" placeholder="이름(필수)" readonly>
                     <div class="label">위치</div>
-                    <input type="text" class="inputDetail" name="position" placeholder="위치(GPS 태그 또는 글)">
-                    <div class="label">재고/수량</div>
-                    <input type="number" class="inputDetail" name="count" placeholder="재고/수량">
-                    <div class="label">대여여부</div>
-                    <input type="text" class="inputDetail" name="rental" placeholder="대여여부">
+                    <div class="equalContainer">
+                        <input type="button" id="positionListBtn" class="btn holdSize left" onclick="historyToggle()" value="▼" data-state="0">
+                        <input type="text" class="inputDetail" name="position" placeholder="새로운 위치 추가">
+                    </div>
+                    <div id="positionHistory"></div>
+                    
+                    <div class="label">현재 수량</div>
+                    <input type="number" class="inputDetail" name="count" placeholder="현재 수량">
+                    <div class="label">총 재고량</div>
+                    <input type="text" class="inputDetail" name="total" placeholder="총 재고량">
                     <div class="label">설명</div>
                     <textarea type="text" class="inputDetail" name="description" placeholder="물건에 대한 구체적인 설명을 입력해주세요"></textarea>
                 </div>
@@ -92,6 +102,6 @@
         </div>
     </div>
 
-    <script defer src="src/settemplate.js"></script>
+    <script defer src="src/setDocument.js"></script>
 </body>
 </html>
