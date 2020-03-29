@@ -1,7 +1,8 @@
 # Server-Pack
-##### v0.2.2
+##### v0.3.0
 
-# 서버 실행방법
+
+# 서버 첫 실행전 설치
 
 1. **서버 기본플랫폼 설치**
 
@@ -39,7 +40,74 @@
 
     를 입력하여 서버에 필요한 모듈을 설치해줍니다. (30초정도 걸립니다)
 
-3. **서버 프로세스 매니저 설치**
+3. **데이터베이스 서버 설치**
+
+    현 _server-pack_ 에서는 `MySQL`로 데이터베이스 서비스를 지원합니다.
+
+    **전체적인 데이터베이스 설치 전**
+    관련 연결을 자동화로 진행할 파일을 만듭니다.
+
+    root폴더에서 `config`폴더를 만들고 그 아래에 `DB.js`파일을 만듭니다.
+    해당 파일에는 아래의 내용을 적습니다.
+
+    ```js
+    module.exports = {
+        host     : 'localhost',
+        user     : 'root' /* 관리할 사용자 이름 */,
+        password : '*****' /* 원하시는 비밀번호 */,
+        port     : 3306,
+        database : 'items_db'
+    }
+    ```
+
+    구체적인 후에 다룰 환경설정에 맞추어 해당 값들을 바꾸어도 됩니다.
+
+    - `user` 는 관리할 사용자 이름입니다. 기본계정인 `root`를 그대로 이용해줍니다.
+    - `password` 는 데이터베이스에 접근할 비밀번호입니다.
+    - `port` 는 데이터베이스 서버포트 번호입니다. 기본포트인 `3306`를 이용해줍니다.
+
+
+    윈도우에서의 설치방법은 다음링크를 통해 확인해주세요.
+    (설치방법:https://dog-developers.tistory.com/20)
+
+    ✔ *라즈베리파이3 B+* 일 경우 아래의 절차를 참고 (자료출처:https://gyrfalcon.tistory.com/entry/Raspberry-PI-MySQL)
+    
+    1. 터미널을 열고 아래를 입력,
+
+            $ sudo apt-get install mysql-server mysql-client
+
+    2. `Do you want to continue? [Y/n]`라는 질문이 나오면 `y`로 완료해줍니다.
+
+    3. 설치가 완료가 되었다면 아래를 입력해 정상적으로 접근이 가능한지 확인해줍니다.
+
+            $ sudo mysql -uroot
+
+    4. 비밀번호 설정, 성공적으로 접근이 된 상태에서 다음을 수행해줍니다.
+
+        1. 기본 데이터베이스에 접근해줍니다.
+
+                mysql> use mysql;
+
+        2. 계정정보 구성을 확인합니다. root가 존재하는지 확인합니다.
+
+                mysql> select user, host, password from user;
+
+        3. root 계정의 비밀번호를 변경해줍니다.
+
+                mysql> update user set password='(새 비밀번호)' where user='root';
+                
+                # (새 비밀번호)의 공간에 위 DB.js에서 설정한 password를 입력합니다.
+    
+    5. 터미널을 reload한 뒤, 아래를 열어 mysql를 재시작 해줍니다.
+
+            $ sudo service mysql restart
+    
+    6. 최종적으로 비밀번호 입력을 통해 접근이 가능한지 확인해줍니다.
+
+            $ sudo mysql -uroot -p
+
+
+4. **서버 프로세스 매니저 설치**
 
     프롬프트나 터미널에
 
@@ -47,7 +115,10 @@
 
     를 입력하여 Process Manager인 PM2를 설치합니다.
 
-4. **서버 프로세스 실행**
+
+# 서버 실행방법
+
+- **서버 프로세스 실행**
 
     현 디렉토리에서 프롬프트나 터미널에
 
