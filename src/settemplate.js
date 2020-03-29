@@ -37,7 +37,7 @@ function uploadProcess(files, sign){
 }
 
 // 토큰 양식 반환함수
-function template(name, pos, cnt, tot, des, img, imgN){return `<img src="${img}" class="thumbnail" title="${imgN}" width="100%"><div class="textgroup"><div><div class="text name" title="이름:${name}">${name}</div><div class="text count" title="현재 수량:${cnt}">${cnt}</div>/<div class="text total" title="총 재고량:${tot}">${tot}</div></div><div class="text pos" title="위치:${pos}">${pos}</div><div class="text des">${des}</div></div><button class="btn delete" title="삭제하기" onclick="deleteContent(event)"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg></button>`;}
+function template(name, pos, poslist, cnt, tot, des, img, imgN){return `<img src="${img}" class="thumbnail" title="${imgN}" width="100%"><div class="textgroup"><div><div class="text name" title="이름:${name}">${name}</div><div class="text count" title="현재 수량:${cnt}">${cnt}</div>/<div class="text total" title="총 재고량:${tot}">${tot}</div></div><div class="text pos" title="위치:${pos}">${pos}</div><div class="text poslist">${poslist}</div><div class="text des">${des}</div></div><button class="btn delete" title="삭제하기" onclick="deleteContent(event)"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg></button>`;}
 
 // 토큰 추가
 function addToken(data){
@@ -45,7 +45,13 @@ function addToken(data){
     tok.classList.add("token");
     tok.dataset.id = data.n;
     console.log(3, data.i) //*** image test log ********************************************************************************** */
-    tok.innerHTML = template(data.n, data.p, data.c, data.t, data.d, data.i, data.in);
+    // 최근위치만 디스플레이되게
+    let posList = data.p.split(',').reverse()   ;
+    const firstPos = posList.shift();
+    let posListStr = "";
+    posList.forEach(element => {posListStr += `<div>${element}</div>`});
+
+    tok.innerHTML = template(data.n, firstPos, posListStr, data.c, data.t, data.d, data.i, data.in);
     tok.addEventListener("click", (ev)=>{showContent(ev)})
     document.getElementById("tokenlist").appendChild(tok);
 }
@@ -61,6 +67,7 @@ function overlayOn(){
 function overlayOff(){
     document.getElementById("overlay").style.display = "none";
     document.body.style.overflow = "visible";
+    historyToggle(true);
 }
 
 // 메뉴 클릭
@@ -155,7 +162,11 @@ function submitForm(sign){
                 method : "POST",
                 url : "/save",
                 message: content
-            }, ()=>{alert("성공적으로 저장하였습니다.");resetForm(sign, true);},
+            }, ()=>{
+                alert("성공적으로 저장하였습니다.");
+                resetForm(sign, true);
+                // document.getElementById("tokenlist")아래에 있는 내용 초기화
+            },
             ()=>{alert("저장에 실패하였습니다. 다시시도 해주세요.")})
         })
     }
@@ -260,7 +271,17 @@ function setContent(toToken=false){
     // token => form
     else{
         targetForm.getElementsByClassName("inputDetail")[0].value = subject.getElementsByClassName("name")[0].innerHTML;
-        targetForm.getElementsByClassName("inputDetail")[1].value = subject.getElementsByClassName("pos")[0].innerHTML;
+        
+        // 위치내역 초기화
+        document.getElementById("positionHistory").innerHTML = "";
+        let lastPos = subject.getElementsByClassName("pos")[0].innerHTML
+        let countIndex = 0;
+        if(lastPos!=="") addHistory(lastPos, countIndex++);
+        const posList = subject.querySelectorAll(".poslist>div");
+        for (let i = 0; i < posList.length; i++) {
+            addHistory(posList[i].innerHTML, countIndex++);
+        }
+
         targetForm.getElementsByClassName("inputDetail")[2].value = subject.getElementsByClassName("count")[0].innerHTML;
         targetForm.getElementsByClassName("inputDetail")[3].value = subject.getElementsByClassName("total")[0].innerHTML;
         targetForm.getElementsByClassName("inputDetail")[4].value = subject.getElementsByClassName("des")[0].innerHTML;
@@ -271,6 +292,44 @@ function setContent(toToken=false){
     }
 }
 
-function historyToggle(){
-    document.getElementById("positionHistory").style.display = "none";
+// 위치 내역으로 값 출력
+function addHistory(data, index){
+    const historyToken = document.createElement("div");
+    historyToken.classList.add("equalContainer")
+    historyToken.innerHTML = `
+    <input type="text" class="inputPos" name="position" placeholder="위치값 없음" value="${data}">
+    <input type="button" class="btn holdSize update" value="✔" title="현 내용으로 변경" onclick="updateHistory(event,${index})">`;
+    document.getElementById("positionHistory").appendChild(historyToken);
+}
+
+// 위치내역 변경
+function updateHistory(ev, index){
+    const targetName = ev.currentTarget.parentElement.parentElement.previousElementSibling.previousElementSibling.previousElementSibling.value;
+    const targetVal = ev.currentTarget.previousElementSibling.value;
+    console.log(targetName, targetVal)
+    if(!confirm(`정말로 위치내용을 \'${targetVal}\'로 변경합니까?`)) return 0;
+    ajaxPipe({
+        method : "POST",
+        url : "/savelocate",
+        message: `${targetName},${targetVal},${index}`
+    }, ()=>{alert("성공적으로 변경하였습니다.");},
+    ()=>{alert("변경에 실패하였습니다. 다시시도 해주세요.")})
+}
+
+// 위치 내역 토글, isHideForce=true일 경우 강제로 숨기기
+function historyToggle(isHideForce=false){
+    const toggleBtn = document.getElementById("positionListBtn");
+    const st = toggleBtn.dataset.state;
+    if(isHideForce || st === "1"){
+        document.getElementById("positionHistory").style.display = "none";
+        toggleBtn.dataset.state = "0";
+        toggleBtn.value = "▼";
+        toggleBtn.title = "위치 내역 보이기";
+    }
+    else{
+        document.getElementById("positionHistory").style.display = "block";
+        toggleBtn.dataset.state = "1";
+        toggleBtn.value = "▲";
+        toggleBtn.title = "위치 내역 숨기기";
+    }
 }

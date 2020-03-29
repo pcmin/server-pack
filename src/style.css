@@ -35,7 +35,7 @@ article>.titleName{
     margin: 1pc 0pc 0.5pc;
     padding: 0.2pc;
 }
-.inputDetail{
+.inputDetail, .inputPos{
     width:100%;
     min-height: 2pc;
     padding: 0.5pc;
@@ -119,8 +119,8 @@ article .submitArea{margin-top: 1pc;}
     /* flex-grow: 1; /* .rent, .count 를 우측정렬할 경우 */
 }
 .token .text.name+div{margin-left: 0.7pc;}
-.token .text.rent,.token .text.count{font-size: 0.8em;}
-.token .text.des{display: none;}
+.token .text.count,.token .text.total{font-size: 0.8em;}
+.token .text.des, .token .text.poslist{display: none;}
 .token>.btn{
     flex: 0 0 2pc;
     border: none;
@@ -159,6 +159,9 @@ article .submitArea{margin-top: 1pc;}
     border-right: none;
 }
 #positionHistory{
+    display: none;
+}
+#positionHistory>div:first-child{
     padding-top: 0.5pc;
 }
 
