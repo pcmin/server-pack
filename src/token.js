@@ -8,10 +8,10 @@ function addToken(data){
     tok.dataset.id = data.n;
     console.log(3, data.i) //*** image test log ********************************************************************************** */
     // 최근위치만 디스플레이되게
-    let posList = data.p.split(',').reverse()   ;
+    let posList = data.p.split(',').reverse();
     const firstPos = posList.shift();
     let posListStr = "";
-    posList.forEach(element => {posListStr += `<div>${element}</div>`});
+    posList.forEach(element => {posListStr += `<div class="pos">${element}</div>`});
 
     tok.innerHTML = template(data.n, firstPos, posListStr, data.c, data.t, data.d, data.i, data.in);
     tok.addEventListener("click", (ev)=>{showContent(ev)})

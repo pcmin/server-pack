@@ -79,7 +79,8 @@ function submitForm(sign){
             }, ()=>{
                 alert("성공적으로 저장하였습니다.");
                 resetForm(sign, true);
-                // document.getElementById("tokenlist")아래에 있는 내용 초기화
+                // 모든 토큰 삭제
+                document.getElementById("tokenlist").innerHTML = "";
             },
             ()=>{alert("저장에 실패하였습니다. 다시시도 해주세요.")})
         })
@@ -100,7 +101,7 @@ function submitForm(sign){
             message: content
         }, ()=>{
             alert("성공적으로 변경하였습니다.")
-            setContent(true);
+            setUpdateContent();
         },
         ()=>{alert("변경에 실패하였습니다. 다시시도 해주세요.")})
     }
