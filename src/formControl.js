@@ -32,7 +32,10 @@ function resetForm(sign, force=false){
     if(!force && !confirm("입력한 내용을 지웁니까?")) return 0;
     const targetForm = document.forms[sign];
     if(sign===0){
-        for(let i=0; i<5; i++) targetForm.getElementsByClassName("inputDetail")[i].value = "";
+        for(let i=0; i<5; i++){targetForm.getElementsByClassName("inputDetail")[i].value = "";}
+        targetForm.getElementsByClassName("orient")[0].dataset.val = ",,";
+        targetForm.getElementsByClassName("orient")[0].title = "값 없음";
+        targetForm.getElementsByClassName("orient")[0].value = "🧲";
         targetForm.getElementsByClassName("previewImage")[0].src = "";
         targetForm.getElementsByClassName("previewImage")[0].title = "";
         targetForm.getElementsByClassName("previewImage")[0].style.width = "auto";
@@ -64,7 +67,10 @@ function submitForm(sign){
             // 입력 내용 설정
             const key = ['n','p','c','t','d','in','i'];
             let content = "";
-            for(let i=0; i<5; i++) content += `${key[i]}=${targetForm[i].value}&`;
+            for(let i=0; i<5; i++){
+                if(i===1) content += `${key[i]}=${targetForm[i].value+','+targetForm.getElementsByClassName("orient")[0].dataset.val}&`;
+                else content += `${key[i]}=${targetForm[i].value}&`;
+            }
             content += `${key[5]}=${targetForm.getElementsByClassName("previewImage")[0].title}&`;
             console.log(2, targetForm.getElementsByClassName("previewImage")[0].src); //*** image test log ************************************************************ */
             let imageurl = targetForm.getElementsByClassName("previewImage")[0].src;
@@ -90,7 +96,10 @@ function submitForm(sign){
         // 입력 내용 설정
         const key = ['n','p','c','t','d','in','i'];
         let content = "";
-        for(let i=0; i<5; i++) content += `${key[i]}=${targetForm.getElementsByClassName("inputDetail")[i].value}&`;
+        for(let i=0; i<5; i++){
+            if(i===1) content += `${key[i]}=${targetForm.getElementsByClassName("inputDetail")[i].value+','+targetForm.getElementsByClassName("orient")[0].dataset.val}&`;
+            else content += `${key[i]}=${targetForm.getElementsByClassName("inputDetail")[i].value}&`;
+        }
         content += `${key[5]}=${targetForm.getElementsByClassName("previewImage")[0].title}&`;
         content += `${key[6]}=${targetForm.getElementsByClassName("previewImage")[0].src}`;
 

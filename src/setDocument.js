@@ -11,6 +11,5 @@ for(let i=0; i<menuList.length; i++){
 
 // 오버레이 외곽클릭시 창 닫기
 document.getElementById("overlay").onmousedown = function(ev){if(ev.target === ev.currentTarget) overlayOff()}
-
 // 검색영역에 Enter시 내용 검색 실행
 document.getElementById("searchForm").addEventListener("keypress",(ev)=>{if(ev.keyCode===13) searchContent()})

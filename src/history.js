@@ -1,6 +1,16 @@
 // 위치값 토큰 양식 반환함수
 function historyTemplate(data){
-    return `<input type="text" class="inputPos" name="position" placeholder="위치값 없음" value="${data}">
+    data = data.split(',');
+    let mark = "🧲";
+    let val = ",,";
+    let hoverVal = "값 없음";
+    if(data.length > 1 && data[1]!=="" && data[2]!=="" && data[3]!==""){
+        mark = "📌";
+        val = `${data[1]},${data[2]},${data[3]}`;
+        hoverVal = val;
+    }
+    return `<input type="button" class="btn holdSize left orient" onclick="activeOrient(event)" value="${mark}" data-val="${val}" title="${hoverVal}">
+    <input type="text" class="inputPos" name="position" placeholder="위치값 없음" value="${data[0]}">
     <input type="button" class="btn holdSize right update" value="✔" title="현 내용으로 변경" onclick="updateHistory(event)">`
 }
 
@@ -16,6 +26,7 @@ function addHistory(data){
 function updateHistory(ev){
     const targetName = ev.currentTarget.parentElement.parentElement.previousElementSibling.previousElementSibling.previousElementSibling.value;
     const targetVal = ev.currentTarget.previousElementSibling.value;
+    targetVal += ","+ev.currentTarget.previousElementSibling.previousElementSibling.dataset.val;
 
     let index = 0; // 인덱스 위치 탐색
     let searchNode = ev.currentTarget.parentElement.previousElementSibling;
