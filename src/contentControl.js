@@ -78,14 +78,13 @@ function setContent(){
     
     document.getElementById("positionHistory").innerHTML = ""; // 기존 위치내역은 초기화
     // 위치내역 설정
-    let lastPos = subject.getElementsByClassName("pos")[0].innerHTML
-    let countIndex = 0;
+    let lastPos = subject.getElementsByClassName("pos")[0];
     // 최근 위치값이 존재할 경우 위치값토큰 추가
-    if(lastPos!==""){
-        addHistory(lastPos, countIndex++);
+    if(lastPos.innerHTML!==""){
+        addHistory(lastPos.innerHTML, lastPos.dataset.val);
         const posList = subject.querySelectorAll(".poslist>.pos");
         for (let i = 0; i < posList.length; i++) {
-            addHistory(posList[i].innerHTML, countIndex++);
+            addHistory(posList[i].innerHTML, posList[i].dataset.val);
         }
     }
 

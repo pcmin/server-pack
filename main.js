@@ -45,7 +45,7 @@ app.post("/save", (req, res)=>{
         if(data.p !== ""){
             connectionDB.query(
                 "INSERT INTO `position` (??, ??, ??) VALUES (?, ?, NOW())",
-                ['item', 'content', 'date', data.n, data.p],
+                ['item', 'content', 'date', data.n, `[${data.p}]`],
                 (err, items)=>{
                     if(err) throw err;
                     console.log("위치저장완료", data.n)
@@ -399,7 +399,7 @@ app.post("/savelocate", (req, res)=>{
             [query[0], limitNum, query[1]],
             (err, items)=>{
                 if(err) throw err;
-                console.log("위치변경저장완료", query[0], limitNum, query[1])
+                console.log("위치변경저장완료", query[0], limitNum, `[${query[1]}]`)
                 res.status(200).send();
             }
         );

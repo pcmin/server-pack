@@ -34,9 +34,9 @@ function orientTemplate(){
 
 function realtimeCatchOrient(event) {
     // const absolute = event.absolute;
-    orientationValue.alpha = event.alpha; //(0, 360)
-    orientationValue.beta = event.beta; //(-180, 180)
-    orientationValue.gamma = event.gamma; //(-90, 90)
+    orientationValue.alpha = event.alpha.toFixed(0); //(0, 360)
+    orientationValue.beta = event.beta.toFixed(0); //(-180, 180)
+    orientationValue.gamma = event.gamma.toFixed(0); //(-90, 90)
 
     // 실시간으로 값이 보여집니다.
     document.getElementById("rtalpha").innerHTML = orientationValue.alpha;

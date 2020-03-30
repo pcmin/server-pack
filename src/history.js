@@ -1,32 +1,30 @@
 // 위치값 토큰 양식 반환함수
-function historyTemplate(data){
-    data = data.split(',');
+function historyTemplate(name, data){
     let mark = "🧲";
     let val = ",,";
     let hoverVal = "값 없음";
-    if(data.length > 1 && data[1]!=="" && data[2]!=="" && data[3]!==""){
+    if(data.length > 1 && data!==",,"){
         mark = "📌";
-        val = `${data[1]},${data[2]},${data[3]}`;
+        val = data;
         hoverVal = val;
     }
     return `<input type="button" class="btn holdSize left orient" onclick="activeOrient(event)" value="${mark}" data-val="${val}" title="${hoverVal}">
-    <input type="text" class="inputPos" name="position" placeholder="위치값 없음" value="${data[0]}">
+    <input type="text" class="inputPos" name="position" placeholder="위치값 없음" value="${name}">
     <input type="button" class="btn holdSize right update" value="✔" title="현 내용으로 변경" onclick="updateHistory(event)">`
 }
 
 // 위치 내역으로 값 출력
-function addHistory(data){
+function addHistory(name, data){
     const historyToken = document.createElement("div");
     historyToken.classList.add("equalContainer")
-    historyToken.innerHTML = historyTemplate(data);
+    historyToken.innerHTML = historyTemplate(name, data);
     document.getElementById("positionHistory").appendChild(historyToken);
 }
 
 // 위치내역 변경
 function updateHistory(ev){
     const targetName = ev.currentTarget.parentElement.parentElement.previousElementSibling.previousElementSibling.previousElementSibling.value;
-    const targetVal = ev.currentTarget.previousElementSibling.value;
-    targetVal += ","+ev.currentTarget.previousElementSibling.previousElementSibling.dataset.val;
+    const targetVal = ev.currentTarget.previousElementSibling.value+","+ev.currentTarget.previousElementSibling.previousElementSibling.dataset.val;
 
     let index = 0; // 인덱스 위치 탐색
     let searchNode = ev.currentTarget.parentElement.previousElementSibling;
@@ -52,7 +50,7 @@ function updateHistory(ev){
 function setupdateHistory(index){
     const targetForm = document.forms[1];
     const subject = document.querySelector(`#tokenlist>.token[data-id='${targetForm.dataset.tokenid}']`);
-    subject.getElementsByClassName("pos")[index].innerHTML = targetForm.getElementsByClassName("inputPos")[index].value
+    subject.getElementsByClassName("pos")[index].innerHTML = `[${targetForm.getElementsByClassName("inputPos")[index].value},${targetForm.getElementsByClassName("orient")[index].value}]`;
 }
 
 // 위치 내역 토글, isHideForce=true일 경우 강제로 숨기기

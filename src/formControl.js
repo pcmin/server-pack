@@ -68,8 +68,8 @@ function submitForm(sign){
             const key = ['n','p','c','t','d','in','i'];
             let content = "";
             for(let i=0; i<5; i++){
-                if(i===1) content += `${key[i]}=${targetForm[i].value+','+targetForm.getElementsByClassName("orient")[0].dataset.val}&`;
-                else content += `${key[i]}=${targetForm[i].value}&`;
+                if(i===1) content += `${key[i]}=${targetForm.getElementsByClassName("inputDetail")[i].value+','+targetForm.getElementsByClassName("orient")[0].dataset.val}&`;
+                else content += `${key[i]}=${targetForm.getElementsByClassName("inputDetail")[i].value}&`;
             }
             content += `${key[5]}=${targetForm.getElementsByClassName("previewImage")[0].title}&`;
             console.log(2, targetForm.getElementsByClassName("previewImage")[0].src); //*** image test log ************************************************************ */
