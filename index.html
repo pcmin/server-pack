@@ -10,6 +10,7 @@
     <script src="src/imageUpload.js"></script>
     <script src="src/history.js"></script>
     <script src="src/token.js"></script>
+    <script src="src/orientation.js"></script>
 </head>
 <body class="stretchContainer">
     <header>
@@ -27,7 +28,10 @@
                         <div class="label">이름</div>
                         <input type="text" class="inputDetail" name="name" placeholder="이름(필수)" required>
                         <div class="label">위치</div>
-                        <input type="text" class="inputDetail" name="position" placeholder="위치(GPS 태그 또는 글)">
+                        <div class="equalContainer">
+                            <input type="button" class="btn holdSize left" onclick="activeOrient(event)" value="🧲" data-val=",," title="값 없음">
+                            <input type="text" class="inputDetail" name="position" placeholder="위치(GPS 태그 또는 글)">
+                        </div>
                         <div class="label">현재 수량</div>
                         <input type="number" class="inputDetail" name="count" placeholder="현재 수량">
                         <div class="label">총 재고량</div>
@@ -87,6 +91,7 @@
                     <div class="label">위치</div>
                     <div class="equalContainer">
                         <input type="button" id="positionListBtn" class="btn holdSize left" onclick="historyToggle()" value="▼" data-state="0">
+                        <input type="button" class="btn holdSize left" onclick="activeOrient(event)" value="🧲" data-val=",," title="값 없음">
                         <input type="text" class="inputDetail" name="position" placeholder="새로운 위치 추가">
                     </div>
                     <div id="positionHistory"></div>

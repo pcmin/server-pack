@@ -129,7 +129,7 @@ article .submitArea{margin-top: 1pc;}
 }
 .token>.btn:hover{background-color: hsl(0, 0%, 95%);}
 
-#overlay{
+#overlay, #orientOverlay{
     position: absolute;
     top: 0;
     bottom: 0;
@@ -139,7 +139,7 @@ article .submitArea{margin-top: 1pc;}
     background-color: hsla(0, 0%, 0%, 0.5);
     overflow: auto;
 }
-#overlay>.stat{
+#overlay>.stat, #orientOverlay>.stat{
     background-color: white;
     padding: 1pc;
     height: fit-content;
@@ -155,7 +155,38 @@ article .submitArea{margin-top: 1pc;}
 #positionHistory{display: none;}
 #positionHistory>div{padding-top: 0.2pc;}
 #positionHistory>div:first-child{padding-top: 0.5pc !important;}
-#overlay .holdSize{
+
+#orientOverlay{display: flex !important;}
+#orientOverlay>.stat{width: calc(300px + 2pc);}
+#orientOverlay #garden{
+    position: relative;
+    width: 300px;
+    height: 300px;
+    margin: 1pc auto;
+    border: 1px solid #ccc;
+}
+#orientOverlay #garden>#arrowSign{fill: #A93226;}
+#orientOverlay .submitArea{
+    display: flex;
+    margin-top: 0pc;
+    margin-bottom: 0.5pc;
+}
+#orientOverlay .submitArea>.btn.cancel{
+    margin-left: auto;
+    float: none !important;
+}
+#orientOverlay .message{
+    font-size: 1.5pc;
+    font-weight: 700;
+    text-align: center;
+}
+#orientOverlay .data{
+    margin: 0.25pc 0.12pc;
+    background-color: hsl(263, 48%, 87%);
+    text-align: center;
+}
+
+.holdSize{
     width: 2.3pc;
     background-color: white;
     border: 1px solid #aeaeae;
@@ -169,7 +200,7 @@ article .submitArea{margin-top: 1pc;}
 .stretchContainer>*:first-child~*{flex: auto;}
 
 .equalContainer{display: flex;}
-.equalContainer>*:first-child{flex: auto;}
+.equalContainer>*{flex: auto;}
 .equalContainer .btn.holdSize{flex: 0 0 auto;}
 .equalContainer .btn.holdSize.left{border-right: none !important;}
 .equalContainer .btn.holdSize.right{border-left: none !important;}
