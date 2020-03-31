@@ -19,3 +19,8 @@ CREATE TABLE `position`(
     `date` DATETIME,
     PRIMARY KEY (`id`)
 );
+
+CREATE TABLE `correct`(
+    `value` INT
+)
+INSERT INTO `correct` (`value`) VALUES (0);

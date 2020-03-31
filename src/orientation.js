@@ -13,6 +13,7 @@ function orientTemplate(){
     return `
     <div class="stat">
         <div class="submitArea">
+            <input type="button" class="btn check" value="보정하기" onclick="correctOrient()">
             <input type="button" class="btn cancel" value="닫기" onclick="inactiveOrient()">
         </div>
         <div class="message">물체 앞에서 스피커를 향해 화살표를 누르세요</div>
@@ -89,10 +90,21 @@ function readOrientVal(){
 
     console.log(alpha, beta, gamma);
     if(alpha !== null && alpha !== "" && beta !== null && beta !== "" && gamma !== null && gamma !== ""){
+        alert("물건의 위치를 파악하였습니다");
         const orientVal = `${alpha},${beta},${gamma}`;
         const refNode = document.getElementById("orientOverlay").nextElementSibling;
         refNode.value = "📌";
         refNode.dataset.val = orientVal;
         refNode.title = orientVal;
     }
+}
+
+function correctOrient(){
+    // 보정 내용을 보냅니다.
+    ajaxPipe({
+        method : "POST",
+        url : "/locatem",
+        message: orientationValue.alpha
+    }, ()=>{alert("성공적으로 저장하였습니다.")},
+    ()=>{alert("저장에 실패하였습니다. 다시시도 해주세요.")})
 }

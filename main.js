@@ -22,7 +22,7 @@ let historySearch = {
 
 // 홈페이지
 app.get("/", (req, res)=>{
-    const homeTemplate = fs.readFileSync("index.html", "utf-8")
+    const homeTemplate = fs.readFileSync("db-test.html", "utf-8")
     res.status(200)
         .type('text/html')
         .send(homeTemplate)
@@ -349,7 +349,14 @@ app.post("/locate", (req, res)=>{
                 }
                 else{
                     console.log("위치조회", query, items[0].content);
-                    res.status(200).send(`${queryName},${items[0].content}`);
+                    connectionDB.query(
+                        "SELECT `value` FROM `correct`",
+                        (err, value)=>{
+                            if(err) throw err;
+                            console.log(value)
+                            res.status(200).send(`${queryName},${items[0].content.replace(']','').replace('[','').split(',')[1]},${value[0].value}`);
+                        }
+                    )
                 }
             }
         );
@@ -405,6 +412,29 @@ app.post("/savelocate", (req, res)=>{
         );
     })
 })
+
+// 보정수치를 저장합니다.
+app.post("/locatem", (req, res)=>{
+    let body = ""
+    req.on("data", (data) => {body += data})
+    req.on("end", () => {
+        const query = qs.unescape(body);
+        // 변경
+        if(query === ""){
+            res.status(404).send();
+            return;
+        }
+        connectionDB.query(
+            "UPDATE `correct` SET `value`=?",
+            [query],
+            (err, items)=>{
+                if(err) throw err;
+                console.log("보정수치저장완료", query)
+                res.status(200).send();
+            }
+        );
+    })
+});
 
 // 페이지 오류
 app.use((req, res, next)=>{res.status(404).send('Not Found')})
