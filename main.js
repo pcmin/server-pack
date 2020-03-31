@@ -345,7 +345,7 @@ app.post("/locate", (req, res)=>{
                 if(err) throw err;
                 if(items.length === 0){
                     console.log("존재하지않는 위치조회", query);
-                    res.status(200).send(`${queryName},`);
+                    res.status(404);
                 }
                 else{
                     console.log("위치조회", query, items[0].content);
