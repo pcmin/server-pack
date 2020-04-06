@@ -22,7 +22,7 @@ let historySearch = {
 
 // 홈페이지
 app.get("/", (req, res)=>{
-    const homeTemplate = fs.readFileSync("db-test.html", "utf-8")
+    const homeTemplate = fs.readFileSync("index.html", "utf-8")
     res.status(200)
         .type('text/html')
         .send(homeTemplate)
